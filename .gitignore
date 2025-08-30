@@ -1,0 +1,6 @@
+dist
+build
+.venv
+.vscode
+__pycache__
+开发文档.md

@@ -1,0 +1,16 @@
+{
+  "auto_accept_enabled": false,
+  "preselect_enabled": false,
+  "auto_ban_enabled": false,
+  "auto_pick_enabled": false,
+  "preselect_champion_id": null,
+  "auto_ban_champion_id": null,
+  "auto_pick_champion_id": null,
+  "position_champions": {
+    "TOP": null,
+    "JUNGLE": null,
+    "MIDDLE": null,
+    "BOTTOM": null,
+    "UTILITY": null
+  }
+}
