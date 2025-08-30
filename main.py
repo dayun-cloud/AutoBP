@@ -363,7 +363,11 @@ async def on_champ_select(connection, event):
             # 有分配位置，严格按位置预选英雄
             current_champion = _get_champion_id_for_position(position)
             if not current_champion:
-                print(f"[INFO] No champion configured for position {position}, skipping preselect")
+                # 避免重复打印相同的警告信息
+                warning_key = f"no_champion_for_position_{position}"
+                if warning_key not in _logged_warnings:
+                    print(f"[INFO] No champion configured for position {position}, skipping preselect")
+                    _logged_warnings.add(warning_key)
         else:
             # 没有分配位置，使用默认预选英雄
             if CONFIG.get("preselect_champion_id"):
@@ -447,7 +451,11 @@ async def on_champ_select(connection, event):
                     # 有分配位置，严格按位置选择英雄
                     champion_id = _get_champion_id_for_position(position)
                     if not champion_id:
-                        print(f"[INFO] No champion configured for position {position}, skipping auto pick")
+                        # 避免重复打印相同的警告信息
+                        warning_key = f"no_champion_for_position_{position}_auto_pick"
+                        if warning_key not in _logged_warnings:
+                            print(f"[INFO] No champion configured for position {position}, skipping auto pick")
+                            _logged_warnings.add(warning_key)
                 else:
                     # 没有分配位置，使用默认秒选英雄
                     if CONFIG.get("auto_pick_champion_id"):
