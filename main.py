@@ -391,9 +391,17 @@ async def on_champ_select(connection, event):
             # 只有当前预选英雄与目标不同时才设置
             if current_pick_intent != current_champion and _last_preselect_champion != current_champion:
                 if position:
-                    print(f"[INFO] Attempting to preselect position-based champion {current_champion} for {position}")
+                    # 避免重复打印相同的预选尝试信息
+                    warning_key = f"attempting_preselect_{position}_{current_champion}_{phase}"
+                    if warning_key not in _logged_warnings:
+                        print(f"[INFO] Attempting to preselect position-based champion {current_champion} for {position}")
+                        _logged_warnings.add(warning_key)
                 else:
-                    print(f"[INFO] Attempting to preselect default champion {current_champion}")
+                    # 避免重复打印相同的默认英雄预选尝试信息
+                    warning_key = f"attempting_preselect_default_{current_champion}_{phase}"
+                    if warning_key not in _logged_warnings:
+                        print(f"[INFO] Attempting to preselect default champion {current_champion}")
+                        _logged_warnings.add(warning_key)
                 
                 # 尝试获取当前的pick action
                 current_action = await _get_pick_action_for_preselect(connection, local_cell)
@@ -414,9 +422,17 @@ async def on_champ_select(connection, event):
                         else:
                             print(f"[INFO] Champion {current_champion} already preselected for action {action_id}")
                     else:
-                        print(f"[ERROR] No valid action ID found for preselect")
+                        # 避免重复打印相同的错误信息
+                        warning_key = "no_valid_action_id_for_preselect"
+                        if warning_key not in _logged_warnings:
+                            print(f"[ERROR] No valid action ID found for preselect")
+                            _logged_warnings.add(warning_key)
                 else:
-                    print(f"[ERROR] No current pick action found for preselect")
+                    # 避免重复打印相同的错误信息
+                    warning_key = f"no_pick_action_for_preselect_{phase}"
+                    if warning_key not in _logged_warnings:
+                        print(f"[ERROR] No current pick action found for preselect")
+                        _logged_warnings.add(warning_key)
 
     # 自动Ban
     if CONFIG.get("auto_ban_enabled") and CONFIG.get("auto_ban_champion_id") and phase == "BAN_PICK":
@@ -490,8 +506,7 @@ async def on_champ_select(connection, event):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 启动时更新英雄数据
-    await update_champions_if_needed()
-    
+    await update_champions_if_needed()  
     # 启动LCU连接器 - 在单独的线程中运行
     def _runner():
         loop = asyncio.new_event_loop()
