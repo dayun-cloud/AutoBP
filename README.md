@@ -2,7 +2,7 @@
 
 一个功能强大的英雄联盟自动Ban/Pick助手，支持自动接受对局、智能预选英雄、自动禁用英雄和按位置自动选择英雄等功能。
 
-📥 **[点击下载最新版本](https://github.com/dayun-cloud/AutoBP/releases/latest/download/AutoBP_Setup.exe)**
+📥 **[点击下载最新版本](https://github.com/dayun-cloud/AutoBP/releases/latest/download/AutoBP-Setup.exe)**
 
 ## ✨ 主要功能
 
