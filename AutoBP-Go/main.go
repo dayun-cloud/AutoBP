@@ -17,15 +17,17 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:         "AutoBP-Go",
-		Width:         600,
-		Height:        900,
-		MinWidth:      600,
-		MinHeight:     900,
-		MaxWidth:      600,
-		MaxHeight:     900,
-		DisableResize: true,
-		Frameless:     true,
+		Title:           "AutoBP-Go",
+		Width:           600,
+		Height:          900,
+		MinWidth:        600,
+		MinHeight:       900,
+		MaxWidth:        600,
+		MaxHeight:       900,
+		DisableResize:   true,
+		Frameless:       true,
+		CSSDragProperty: "--wails-draggable",
+		CSSDragValue:    "drag",
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

@@ -9,27 +9,24 @@
     :root { color-scheme: light dark; }
     body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif; margin: 0; padding: 0; background: rgb(33, 35, 39); color: #e7e9ee; min-height: 100vh; }
     
-    /* 自定义标题栏样式 */
-    .custom-titlebar { height: 30px; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: space-between; padding: 0; user-select: none; border-bottom: 1px solid rgba(255,255,255,0.1); -webkit-app-region: drag; }
-    .titlebar-drag { flex: 1; height: 100%; display: flex; align-items: center; padding-left: 12px; }
-    .titlebar-title { font-size: 12px; color: #e7e9ee; font-weight: 500; }
-    .titlebar-controls { display: flex; height: 100%; -webkit-app-region: no-drag; }
-    .titlebar-button { width: 45px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; -webkit-app-region: no-drag; }
-    .titlebar-button:hover { background: rgba(255, 255, 255, 0.1); }
-    .titlebar-button:last-child:hover { background: #e81123; }
-    .titlebar-icon { width: 10px; height: 10px; fill: #e7e9ee; opacity: 0.8; }
-    header { padding: 8px 16px; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0)); border-bottom: 1px solid rgba(255,255,255,0.08); }
-     .header-inner { width: 420px; margin: 0; padding: 0px 0px 0px 15px; display: flex; align-items: center; justify-content: space-between; }
+    header { padding: 12px 8px 8px 8px; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0)); border-bottom: 1px solid rgba(255,255,255,0.08); --wails-draggable: drag; user-select: none; }
+    .header-inner { width: 440px; margin: 0; padding: 0px 0px 0px 15px; display: flex; align-items: center; justify-content: space-between; --wails-draggable: drag; }
+    .header-left { display: flex; align-items: center; gap: 50px; --wails-draggable: drag; }
+    .header-controls { display: flex; height: 30px; --wails-draggable: none; }
+    .header-button { width: 35px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; --wails-draggable: none; border-radius: 4px; }
+    .header-button:hover { background: rgba(255, 255, 255, 0.1); }
+    .header-button.close:hover { background: #e81123; }
+    .header-icon { width: 10px; height: 10px; fill: #e7e9ee; opacity: 0.8; }
     h1 { font-size: 14px; margin: 0; letter-spacing: .3px; }
     h1 img { height: 52px !important; transform: scale(1.6); transform-origin: left center; }
-    .status { display: inline-flex; gap: 5px; align-items: center; flex-wrap: wrap; max-width: 180px; margin: 0; }
+    .status { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; max-width: 180px; margin: 0; }
     .badge { padding: 2px 5px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); transition: all 0.2s ease; }
     .badge.connected { background: rgb(106, 167, 188); border-color: rgb(106, 167, 188); }
     .badge.error { background: rgb(220, 38, 127); border-color: rgb(220, 38, 127); }
 
     /* 居中主区域 */
-    main { padding: 10px 20px 0px 26px; max-width: 100%; margin: 0; display: grid; gap: 10px; }
-    section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 20px; margin: 0; width: 390px; min-height: 180px; }
+    main { padding: 20px 20px 0px 25px; max-width: 100%; margin: 0; display: grid; gap: 10px; }
+    section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 20px; margin: 0; width: 395px; min-height: 180px; }
     .section-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #fff; }
 
     /* 行：标题 | 下拉 | 开关 */
@@ -85,31 +82,26 @@
   </style>
 </head>
 <body>
-  <!-- 自定义标题栏 -->
-  <div class="custom-titlebar">
-    <div class="titlebar-drag" data-wails-drag>
-      <span class="titlebar-title">AutoBP - 英雄联盟自动BP助手</span>
-    </div>
-    <div class="titlebar-controls">
-      <div class="titlebar-button" onclick="window.runtime.WindowMinimise()">
-        <svg class="titlebar-icon" viewBox="0 0 12 12">
-          <rect x="0" y="5" width="10" height="1"/>
-        </svg>
-      </div>
-      <div class="titlebar-button close" onclick="window.runtime.Quit()">
-        <svg class="titlebar-icon" viewBox="0 0 12 12">
-          <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-  
   <header>
     <div class="header-inner">
-      <h1><img src="https://img.dayun.cool/_dayun/AutoBP.webp" alt="AutoBP" style="height: 52px; vertical-align: middle;"></h1>
-      <div class="status">
-        <span class="badge" id="lcu-status">LCU 未连接</span>
-        <span class="badge" id="client-status">客户端状态未知</span>
+      <div class="header-left">
+        <h1><img src="https://img.dayun.cool/_dayun/AutoBP.webp" alt="AutoBP" style="height: 52px; vertical-align: middle;"></h1>
+        <div class="status">
+          <span class="badge" id="lcu-status">LCU 未连接</span>
+          <span class="badge" id="client-status">客户端状态未知</span>
+        </div>
+      </div>
+      <div class="header-controls">
+        <div class="header-button" onclick="window.runtime.WindowMinimise()">
+          <svg class="header-icon" viewBox="0 0 12 12">
+            <rect x="0" y="5" width="10" height="1"/>
+          </svg>
+        </div>
+        <div class="header-button close" onclick="window.runtime.Quit()">
+          <svg class="header-icon" viewBox="0 0 12 12">
+            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1"/>
+          </svg>
+        </div>
       </div>
     </div>
   </header>
