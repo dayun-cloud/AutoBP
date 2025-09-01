@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <link rel="icon" href="https://img.dayun.cool/_dayun/AutoBP.webp">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AutoBP - 英雄联盟自动BP助手</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif; margin: 0; padding: 0; background: rgb(33, 35, 39); color: #e7e9ee; }
+    header { padding: 0px 0px; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0)); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; backdrop-filter: blur(6px); }
+    .header-inner { max-width: 960px; margin: 0 auto; width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    h1 { font-size: 20px; margin: 0; letter-spacing: .5px; }
+    .status { display: inline-flex; gap: 10px; align-items: center; }
+    .badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); transition: all 0.3s ease; }
+    .badge.connected { background: rgb(106, 167, 188); border-color: rgb(106, 167, 188); }
+    .badge.error { background: rgb(220, 38, 127); border-color: rgb(220, 38, 127); }
+
+    /* 居中主区域 */
+    main { padding: 60px; max-width: 960px; margin: 0 auto; display: grid; gap: 16px; }
+    section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; margin: 0 auto; width: 100%; max-width: 860px; }
+    .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #fff; }
+
+    /* 行：标题 | 下拉 | 开关 */
+    .row { display: grid; grid-template-columns: 200px auto auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); }
+    .row:last-child { border-bottom: 0; }
+    .switch { position: relative; width: 48px; height: 28px; background: rgba(255,255,255,0.2); border-radius: 999px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: .2s ease; justify-self: end; }
+    .switch.on { background: rgb(106, 167, 188); }
+    .knob { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background: #fff; border-radius: 50%; transition: .2s ease; }
+    .switch.on .knob { transform: translateX(20px); }
+
+    .muted { opacity: .8; font-size: 12px; }
+
+    /* 自定义下拉组件，内置搜索框 */
+    .dropdown { position: relative; width: 220px; max-width: 100%; }
+    .dropdown-trigger { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .dropdown-trigger .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dropdown-trigger .arrow { opacity: .8; transition: transform 0.2s ease; }
+    .dropdown.open .dropdown-trigger .arrow { transform: rotate(180deg); }
+
+    .dropdown-panel { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: rgb(33, 35, 39); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); padding: 8px; z-index: 20; display: none; }
+    .dropdown.open .dropdown-panel { display: block; }
+    .dropdown-search { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; outline: none; margin-bottom: 8px; }
+    .dropdown-list { max-height: 260px; overflow: auto; border-radius: 8px; }
+    .dropdown-item { padding: 8px 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-radius: 6px; }
+    .dropdown-item:hover { background: rgba(255,255,255,0.08); }
+    .dropdown-item .name { color: #e7e9ee; }
+    .dropdown-empty { padding: 8px 10px; opacity: .7; text-align: center; }
+
+    /* 加载状态 */
+    .loading { opacity: 0.6; pointer-events: none; }
+    .loading::after { content: "加载中..."; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 4px; font-size: 12px; }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      main { padding: 20px; }
+      .row { grid-template-columns: 1fr; gap: 8px; text-align: center; }
+      .dropdown { width: 100%; }
+      .switch { justify-self: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1><a href="https://hi.dayun.cool" target="_blank" style="text-decoration: none;"><img src="https://img.dayun.cool/_dayun/AutoBP.webp" alt="AutoBP" style="height: 88px; vertical-align: middle;"></a></h1>
+      <div class="status">
+        <span class="badge" id="lcu-status">LCU 未连接</span>
+        <span class="badge" id="client-status">客户端状态未知</span>
+      </div>
+    </div>
+  </header>
+  <main>
+    <!-- 英雄选择设置 -->
+    <section>
+      <!-- 秒接对局：标题 | 空白 | 开关 -->
+      <div class="row">
+        <div>
+          <strong>秒接对局</strong>
+          <div class="muted">匹配成功后自动接受对局</div>
+        </div>
+        <div></div>
+        <div class="switch" id="sw-auto-accept"><div class="knob"></div></div>
+      </div>
+
+      <!-- 预选英雄：标题 | 下拉 | 开关 -->
+      <div class="row">
+        <div>
+          <strong>预选英雄</strong>
+          <div class="muted">进入选人后显示意向</div>
+        </div>
+        <div class="dropdown" id="dd-preselect">
+          <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
+          <div class="dropdown-panel">
+            <input type="search" class="dropdown-search" placeholder="搜索英雄..." />
+            <div class="dropdown-list">
+              <div class="dropdown-item" data-id=""><span class="name">未选择</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="switch" id="sw-preselect"><div class="knob"></div></div>
+      </div>
+
+      <!-- 秒禁英雄：标题 | 下拉 | 开关 -->
+      <div class="row">
+        <div>
+          <strong>秒禁英雄</strong>
+          <div class="muted">Ban 阶段到你时立即禁用</div>
+        </div>
+        <div class="dropdown" id="dd-ban">
+          <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
+          <div class="dropdown-panel">
+            <input type="search" class="dropdown-search" placeholder="搜索英雄..." />
+            <div class="dropdown-list">
+              <div class="dropdown-item" data-id=""><span class="name">未选择</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="switch" id="sw-ban"><div class="knob"></div></div>
+      </div>
+
+      <!-- 秒选英雄：标题 | 下拉 | 开关 -->
+      <div class="row">
+        <div>
+          <strong>秒选英雄</strong>
+          <div class="muted">Pick 阶段到你时立即锁定</div>
+        </div>
+        <div class="dropdown" id="dd-pick">
+          <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
+          <div class="dropdown-panel">
+            <input type="search" class="dropdown-search" placeholder="搜索英雄..." />
+            <div class="dropdown-list">
+              <div class="dropdown-item" data-id=""><span class="name">未选择</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="switch" id="sw-pick"><div class="knob"></div></div>
+      </div>
+    </section>
+
+    <!-- 按位置选择英雄 -->
+    <section>
+      <div class="section-title">排位模式优先按位置选择英雄，其他模式会使用上面设置的 预选/秒选 英雄</div>
+      <!-- 上路 -->
+      <div class="row">
+        <div>
+          <strong>上路</strong>
+          <div class="muted">上单位置的英雄选择</div>
+        </div>
+        <div class="dropdown" id="dd-top">
+          <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
+          <div class="dropdown-panel">
+            <input type="search" class="dropdown-search" placeholder="搜索英雄..." />
+            <div class="dropdown-list">
+              <div class="dropdown-item" data-id=""><span class="name">未选择</span></div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- 打野 -->
+      <div class="row">
+        <div>
+          <strong>打野</strong>
+          <div class="muted">打野位置的英雄选择</div>
+        </div>
+        <div class="dropdown" id="dd-jungle">
+          <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
+          <div class="dropdown-panel">
+            <input type="search" class="dropdown-search" placeholder="搜索英雄..." />
+            <div class="dropdown-list">
+              <div class="dropdown-item" data-id=""><span class="name">未选择</span></div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- 中路 -->
+      <div class="row">
+        <div>
+          <strong>中路</strong>
+          <div class="muted">中单位置的英雄选择</div>
+        </div>
+        <div class="dropdown" id="dd-middle">
+          <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
+          <div class="dropdown-panel">
+            <input type="search" class="dropdown-search" placeholder="搜索英雄..." />
+            <div class="dropdown-list">
+              <div class="dropdown-item" data-id=""><span class="name">未选择</span></div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- 下路 -->
+      <div class="row">
+        <div>
+          <strong>下路</strong>
+          <div class="muted">ADC位置的英雄选择</div>
+        </div>
+        <div class="dropdown" id="dd-bottom">
+          <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
+          <div class="dropdown-panel">
+            <input type="search" class="dropdown-search" placeholder="搜索英雄..." />
+            <div class="dropdown-list">
+              <div class="dropdown-item" data-id=""><span class="name">未选择</span></div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- 辅助 -->
+      <div class="row">
+        <div>
+          <strong>辅助</strong>
+          <div class="muted">辅助位置的英雄选择</div>
+        </div>
+        <div class="dropdown" id="dd-utility">
+          <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
+          <div class="dropdown-panel">
+            <input type="search" class="dropdown-search" placeholder="搜索英雄..." />
+            <div class="dropdown-list">
+              <div class="dropdown-item" data-id=""><span class="name">未选择</span></div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="text-align: center; padding: 10px; color: rgba(255,255,255,0.6); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 60px;">
+    <a href="https://hi.dayun.cool" target="_blank" style="color: inherit; text-decoration: none;">© 2025 大沄</a>
+  </footer>
+
+  <script type="module" src="./wailsjs/runtime/runtime.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+
+    // 全局状态
+    let champions = [];
+    let config = {};
+    let statusUpdateInterval = null;
+
+    // 工具函数
+    function setSwitch(el, on) {
+      el.classList.toggle('on', !!on);
+    }
+
+    function bindSwitch(el, configKey) {
+      el.addEventListener('click', async () => {
+        const isOn = el.classList.contains('on');
+        const newValue = !isOn;
+        setSwitch(el, newValue);
+        
+        // 更新配置
+        config[configKey] = newValue;
+        await saveConfig();
+      });
+    }
+
+    // API 调用函数 - 使用Wails运行时
+    async function fetchChampions() {
+      try {
+        const data = await window.go.main.App.GetChampions();
+        champions = data || [];
+        updateChampionDropdowns();
+      } catch (error) {
+        console.error('Failed to fetch champions:', error);
+      }
+    }
+
+    async function fetchConfig() {
+      try {
+        const data = await window.go.main.App.GetConfig();
+        config = data || {};
+        updateUIFromConfig();
+      } catch (error) {
+        console.error('Failed to fetch config:', error);
+      }
+    }
+
+    async function saveConfig() {
+      try {
+        await window.go.main.App.SaveConfig(config);
+      } catch (error) {
+        console.error('Failed to save config:', error);
+      }
+    }
+
+    async function fetchStatus() {
+      try {
+        const status = await window.go.main.App.GetStatus();
+        updateStatusBadges(status);
+      } catch (error) {
+        console.error('Failed to fetch status:', error);
+        updateStatusBadges({ connected: false, client_status: 'unknown' });
+      }
+    }
+
+    // UI 更新函数
+    function updateUIFromConfig() {
+      // 更新开关状态
+      setSwitch($('#sw-preselect'), config.preselect_enabled);
+      setSwitch($('#sw-ban'), config.auto_ban_enabled);
+      setSwitch($('#sw-pick'), config.auto_pick_enabled);
+      setSwitch($('#sw-auto-accept'), config.auto_accept_enabled);
+
+      // 更新下拉选择
+      updateDropdownSelection('dd-preselect', config.preselect_champion_id);
+      updateDropdownSelection('dd-ban', config.auto_ban_champion_id);
+      updateDropdownSelection('dd-pick', config.auto_pick_champion_id);
+      
+      // 更新位置英雄选择
+      if (config.position_champions) {
+        updateDropdownSelection('dd-top', config.position_champions.TOP);
+        updateDropdownSelection('dd-jungle', config.position_champions.JUNGLE);
+        updateDropdownSelection('dd-middle', config.position_champions.MIDDLE);
+        updateDropdownSelection('dd-bottom', config.position_champions.BOTTOM);
+        updateDropdownSelection('dd-utility', config.position_champions.UTILITY);
+      }
+    }
+
+    function updateDropdownSelection(dropdownId, championId) {
+      const dropdown = $(`#${dropdownId}`);
+      const label = dropdown.querySelector('.label');
+      
+      if (!championId) {
+        label.textContent = '未选择';
+        return;
+      }
+
+      const champion = champions.find(c => c.id === championId);
+      if (champion) {
+        label.textContent = champion.name;
+      } else {
+        label.textContent = '未选择';
+      }
+    }
+
+    function updateChampionDropdowns() {
+      const dropdowns = ['dd-preselect', 'dd-ban', 'dd-pick', 'dd-top', 'dd-jungle', 'dd-middle', 'dd-bottom', 'dd-utility'];
+      
+      dropdowns.forEach(dropdownId => {
+        const dropdown = $(`#${dropdownId}`);
+        const list = dropdown.querySelector('.dropdown-list');
+        
+        // 清空现有选项
+        list.innerHTML = '<div class="dropdown-item" data-id=""><span class="name">未选择</span></div>';
+        
+        // 添加英雄选项
+        champions.forEach(champion => {
+          const item = document.createElement('div');
+          item.className = 'dropdown-item';
+          item.setAttribute('data-id', champion.id);
+          item.innerHTML = `<span class="name">${champion.name}</span>`;
+          list.appendChild(item);
+        });
+      });
+    }
+
+    function updateStatusBadges(status) {
+      const lcuBadge = $('#lcu-status');
+      const clientBadge = $('#client-status');
+      
+      // 更新LCU连接状态
+      if (status.connected) {
+        lcuBadge.textContent = 'LCU 已连接';
+        lcuBadge.className = 'badge connected';
+      } else {
+        lcuBadge.textContent = 'LCU 未连接';
+        lcuBadge.className = 'badge';
+      }
+      
+      // 更新客户端状态
+      const statusMap = {
+        'Lobby': '房间中',
+        'Matchmaking': '匹配中',
+        'ReadyCheck': '准备检查',
+        'ChampSelect': '英雄选择',
+        'GameStart': '游戏开始',
+        'InProgress': '游戏中',
+        'WaitingForStats': '等待结算',
+        'PreEndOfGame': '游戏结束',
+        'EndOfGame': '结算页面',
+        'None': '主界面',
+        'unknown': '未知'
+      };
+      
+      const statusText = statusMap[status.client_status] || status.client_status;
+      clientBadge.textContent = `客户端: ${statusText}`;
+      
+      if (status.client_status === 'ChampSelect') {
+        clientBadge.className = 'badge connected';
+      } else {
+        clientBadge.className = 'badge';
+      }
+    }
+
+    // 下拉菜单交互
+    function createDropdown(el, configKey) {
+      const trigger = el.querySelector('.dropdown-trigger');
+      const label = trigger.querySelector('.label');
+      const panel = el.querySelector('.dropdown-panel');
+      const search = el.querySelector('.dropdown-search');
+      const list = el.querySelector('.dropdown-list');
+
+      function close() {
+        el.classList.remove('open');
+      }
+
+      function open() {
+        el.classList.add('open');
+        search.value = '';
+        showAllItems();
+        search.focus();
+      }
+
+      function showAllItems() {
+        const items = list.querySelectorAll('.dropdown-item');
+        items.forEach(item => {
+          item.style.display = 'flex';
+        });
+      }
+
+      function filterItems() {
+        const term = search.value.trim().toLowerCase();
+        const items = list.querySelectorAll('.dropdown-item');
+        let hasVisible = false;
+        
+        items.forEach(item => {
+          const name = item.querySelector('.name').textContent.toLowerCase();
+          const matches = name.includes(term);
+          item.style.display = matches ? 'flex' : 'none';
+          if (matches) hasVisible = true;
+        });
+
+        // 显示/隐藏"无匹配结果"
+        let emptyDiv = list.querySelector('.dropdown-empty');
+        if (!hasVisible && term) {
+          if (!emptyDiv) {
+            emptyDiv = document.createElement('div');
+            emptyDiv.className = 'dropdown-empty';
+            emptyDiv.textContent = '无匹配结果';
+            list.appendChild(emptyDiv);
+          }
+          emptyDiv.style.display = 'block';
+        } else if (emptyDiv) {
+          emptyDiv.style.display = 'none';
+        }
+      }
+
+      // 绑定事件
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (el.classList.contains('open')) {
+          close();
+        } else {
+          // 关闭其他下拉菜单
+          $$('.dropdown.open').forEach(dd => dd.classList.remove('open'));
+          open();
+        }
+      });
+
+      search.addEventListener('input', filterItems);
+
+      // 选择项目
+      list.addEventListener('click', async (e) => {
+        const item = e.target.closest('.dropdown-item');
+        if (!item) return;
+        
+        const championId = item.getAttribute('data-id');
+        const name = item.querySelector('.name').textContent;
+        
+        label.textContent = name;
+        close();
+        
+        // 更新配置
+        if (configKey.startsWith('position_')) {
+          // 处理位置英雄配置
+          const position = configKey.replace('position_', '');
+          if (!config.position_champions) {
+            config.position_champions = {};
+          }
+          config.position_champions[position] = championId ? parseInt(championId) : null;
+        } else {
+          // 处理普通配置
+          config[configKey] = championId ? parseInt(championId) : null;
+        }
+        await saveConfig();
+      });
+
+      // 点击外部关闭
+      document.addEventListener('click', (e) => {
+        if (!el.contains(e.target)) {
+          close();
+        }
+      });
+    }
+
+    // 初始化函数
+    async function init() {
+      // 绑定开关
+      bindSwitch($('#sw-preselect'), 'preselect_enabled');
+      bindSwitch($('#sw-ban'), 'auto_ban_enabled');
+      bindSwitch($('#sw-pick'), 'auto_pick_enabled');
+      bindSwitch($('#sw-auto-accept'), 'auto_accept_enabled');
+
+      // 初始化下拉菜单
+      createDropdown($('#dd-preselect'), 'preselect_champion_id');
+      createDropdown($('#dd-ban'), 'auto_ban_champion_id');
+      createDropdown($('#dd-pick'), 'auto_pick_champion_id');
+      
+      // 初始化位置英雄下拉菜单
+      createDropdown($('#dd-top'), 'position_TOP');
+      createDropdown($('#dd-jungle'), 'position_JUNGLE');
+      createDropdown($('#dd-middle'), 'position_MIDDLE');
+      createDropdown($('#dd-bottom'), 'position_BOTTOM');
+      createDropdown($('#dd-utility'), 'position_UTILITY');
+
+      // 加载数据
+      await fetchChampions();
+      await fetchConfig();
+      
+      // 3秒后再次获取配置和英雄数据
+      setTimeout(async () => {
+        await fetchChampions();
+        await fetchConfig();
+      }, 3000);
+      
+      // 开始状态轮询（仅轮询状态）
+      fetchStatus();
+      statusUpdateInterval = setInterval(() => {
+        fetchStatus();
+      }, 2000);
+    }
+
+    // 页面卸载时清理
+    window.addEventListener('beforeunload', () => {
+      if (statusUpdateInterval) {
+        clearInterval(statusUpdateInterval);
+      }
+    });
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+  <script type="module" src="./wailsjs/runtime/runtime.js"></script>
+</body>
+</html>
