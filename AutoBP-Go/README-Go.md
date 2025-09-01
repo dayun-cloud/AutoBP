@@ -85,8 +85,6 @@ AutoBP-Go/
 ├── config.go           # 配置管理
 ├── lcu.go              # LCU API连接
 ├── lcu_handlers.go     # LCU事件处理器
-├── config.json         # 默认配置文件
-├── champions.json      # 英雄数据文件
 ├── wails.json          # Wails项目配置
 ├── go.mod              # Go模块依赖
 ├── go.sum              # 依赖校验文件
@@ -165,9 +163,9 @@ AutoBP-Go/
    - 英雄联盟客户端必须运行并登录
    - 需要启用LCU API访问权限
 
-3. **网络要求**
-   - 首次运行需要网络连接以获取英雄数据
-   - LCU API通过本地端口通信
+3. **配置和数据文件**
+   - 首次运行会自动下载最新的英雄数据
+   - 配置文件和英雄数据文件会自动创建在用户数据目录下
 
 4. **使用规范**
    - 请遵守游戏官方规则

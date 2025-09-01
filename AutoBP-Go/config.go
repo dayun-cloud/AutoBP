@@ -39,10 +39,15 @@ func DefaultConfig() *Config {
 }
 
 // LoadConfig 从文件加载配置
-func LoadConfig(filename string) (*Config, error) {
+func LoadConfig() (*Config, error) {
 	config := DefaultConfig()
 	
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
+	filename, err := GetConfigPath()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config path: %w", err)
+	}
+	
+	if _, statErr := os.Stat(filename); os.IsNotExist(statErr) {
 		// 配置文件不存在，返回默认配置
 		return config, nil
 	}
@@ -71,7 +76,12 @@ func LoadConfig(filename string) (*Config, error) {
 }
 
 // SaveConfig 保存配置到文件
-func (c *Config) SaveConfig(filename string) error {
+func (c *Config) SaveConfig() error {
+	filename, err := GetConfigPath()
+	if err != nil {
+		return fmt.Errorf("failed to get config path: %w", err)
+	}
+	
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)

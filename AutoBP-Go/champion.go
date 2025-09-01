@@ -34,16 +34,14 @@ type DDragonResponse struct {
 
 // ChampionManager 英雄数据管理器
 type ChampionManager struct {
-	filename string
-	data     *ChampionData
-	client   *http.Client
+	data   *ChampionData
+	client *http.Client
 }
 
 // NewChampionManager 创建新的英雄数据管理器
-func NewChampionManager(filename string) *ChampionManager {
+func NewChampionManager() *ChampionManager {
 	return &ChampionManager{
-		filename: filename,
-		data:     &ChampionData{Data: make(map[string]Champion)},
+		data: &ChampionData{Data: make(map[string]Champion)},
 		client: &http.Client{
 			Timeout: 15 * time.Second,
 		},
@@ -52,7 +50,12 @@ func NewChampionManager(filename string) *ChampionManager {
 
 // LoadChampions 从本地文件加载英雄数据
 func (cm *ChampionManager) LoadChampions() error {
-	if _, err := os.Stat(cm.filename); os.IsNotExist(err) {
+	filename, err := GetChampionsPath()
+	if err != nil {
+		return fmt.Errorf("failed to get champions path: %w", err)
+	}
+	
+	if _, statErr := os.Stat(filename); os.IsNotExist(statErr) {
 		// 文件不存在，使用空数据
 		cm.data = &ChampionData{
 			Version: "",
@@ -61,7 +64,7 @@ func (cm *ChampionManager) LoadChampions() error {
 		return nil
 	}
 	
-	data, err := os.ReadFile(cm.filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("failed to read champions file: %w", err)
 	}
@@ -79,12 +82,17 @@ func (cm *ChampionManager) LoadChampions() error {
 
 // SaveChampions 保存英雄数据到本地文件
 func (cm *ChampionManager) SaveChampions() error {
+	filename, err := GetChampionsPath()
+	if err != nil {
+		return fmt.Errorf("failed to get champions path: %w", err)
+	}
+	
 	data, err := json.MarshalIndent(cm.data, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal champions data: %w", err)
 	}
 	
-	if err := os.WriteFile(cm.filename, data, 0644); err != nil {
+	if err := os.WriteFile(filename, data, 0644); err != nil {
 		return fmt.Errorf("failed to write champions file: %w", err)
 	}
 	

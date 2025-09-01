@@ -26,7 +26,7 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	
 	// 初始化配置
-	config, err := LoadConfig("config.json")
+	config, err := LoadConfig()
 	if err != nil {
 		fmt.Printf("[ERROR] Failed to load config: %v\n", err)
 		config = DefaultConfig()
@@ -34,7 +34,7 @@ func (a *App) startup(ctx context.Context) {
 	a.config = config
 	
 	// 初始化英雄管理器
-	a.championManager = NewChampionManager("champions.json")
+	a.championManager = NewChampionManager()
 	
 	// 加载本地英雄数据
 	if err := a.championManager.LoadChampions(); err != nil {
@@ -105,7 +105,7 @@ func (a *App) SaveConfig(configData map[string]interface{}) error {
 	defer a.mu.Unlock()
 	
 	a.config.UpdateConfig(configData)
-	err := a.config.SaveConfig("config.json")
+	err := a.config.SaveConfig()
 	if err != nil {
 		fmt.Printf("[ERROR] Failed to save config: %v\n", err)
 		return err
