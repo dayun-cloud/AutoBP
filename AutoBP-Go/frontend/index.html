@@ -16,7 +16,7 @@
     .header-button { width: 35px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; --wails-draggable: none; border-radius: 4px; }
     .header-button:hover { background: rgba(255, 255, 255, 0.1); }
     .header-button.close:hover { background: #e81123; }
-    .header-icon { width: 10px; height: 10px; fill: #e7e9ee; opacity: 0.8; }
+    .header-icon { width: 14px; height: 14px; fill: #e7e9ee; opacity: 0.8; stroke-width: 2; }
     h1 { font-size: 14px; margin: 0; letter-spacing: .3px; }
     h1 img { height: 52px !important; transform: scale(1.6); transform-origin: left center; }
     .status { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; max-width: 220px; margin: 0; }
@@ -101,12 +101,12 @@
       <div class="header-controls">
         <div class="header-button" onclick="window.runtime.WindowMinimise()">
           <svg class="header-icon" viewBox="0 0 12 12">
-            <rect x="0" y="5" width="10" height="1"/>
+            <rect x="0" y="4.5" width="10" height="2"/>
           </svg>
         </div>
         <div class="header-button close" onclick="window.runtime.Quit()">
           <svg class="header-icon" viewBox="0 0 12 12">
-            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1"/>
+            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="2"/>
           </svg>
         </div>
       </div>
