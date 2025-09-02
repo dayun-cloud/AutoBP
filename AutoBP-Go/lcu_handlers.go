@@ -89,6 +89,15 @@ func (lcu *LCUConnector) handleChampSelect(eventData interface{}) {
 
 // acceptReadyCheck 自动接受对局
 func (lcu *LCUConnector) acceptReadyCheck() {
+	// 检查当前游戏状态，只有在ReadyCheck阶段才尝试接受
+	lcu.statusLock.Lock()
+	currentPhase := lcu.status.ClientStatus
+	lcu.statusLock.Unlock()
+	
+	if currentPhase != "ReadyCheck" {
+		return
+	}
+	
 	_, err := lcu.request("POST", "/lol-matchmaking/v1/ready-check/accept", nil)
 	if err != nil {
 		fmt.Printf("[ERROR] Failed to accept ready check: %v\n", err)
@@ -293,9 +302,14 @@ func (lcu *LCUConnector) getPlayerAssignedPosition(data map[string]interface{}, 
 	
 	for _, player := range myTeam {
 		if playerMap, ok := player.(map[string]interface{}); ok {
-			if cellID, ok := playerMap["cellId"].(float64); ok && int(cellID) == localCellID {
-				if position, ok := playerMap["assignedPosition"].(string); ok {
+			cellID, cellIDOk := playerMap["cellId"].(float64)
+			position, positionOk := playerMap["assignedPosition"].(string)
+			
+			if cellIDOk && int(cellID) == localCellID {
+				if positionOk && position != "" {
 					return position
+				} else {
+					return ""
 				}
 			}
 		}

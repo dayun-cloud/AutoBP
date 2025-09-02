@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
 // Config 配置结构体
@@ -134,5 +135,7 @@ func (c *Config) GetChampionIDForPosition(position string) *int {
 	if c.PositionChampions == nil {
 		return nil
 	}
+	// 将位置转换为大写以匹配配置中的键
+	position = strings.ToUpper(position)
 	return c.PositionChampions[position]
 }
