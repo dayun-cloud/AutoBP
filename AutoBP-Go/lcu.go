@@ -413,9 +413,17 @@ func (lcu *LCUConnector) Disconnect() {
 	
 	if lcu.ws != nil {
 		lcu.ws.Close()
+		lcu.ws = nil
 	}
 	
-	close(lcu.stopChan)
+	// 安全关闭stopChan
+	select {
+	case <-lcu.stopChan:
+		// 已经关闭
+	default:
+		close(lcu.stopChan)
+	}
+	
 	fmt.Println("[INFO] LCU disconnected.")
 }
 

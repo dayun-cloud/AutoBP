@@ -24,7 +24,7 @@ func NewApp() *App {
 // can be used to call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	
+
 	// 初始化配置
 	config, err := LoadConfig()
 	if err != nil {
@@ -32,15 +32,15 @@ func (a *App) startup(ctx context.Context) {
 		config = DefaultConfig()
 	}
 	a.config = config
-	
+
 	// 初始化英雄管理器
 	a.championManager = NewChampionManager()
-	
+
 	// 加载本地英雄数据
 	if err := a.championManager.LoadChampions(); err != nil {
 		fmt.Printf("[WARNING] Failed to load champions: %v\n", err)
 	}
-	
+
 	// 更新英雄数据
 	go func() {
 		err := a.championManager.UpdateChampionsIfNeeded()
@@ -48,10 +48,10 @@ func (a *App) startup(ctx context.Context) {
 			fmt.Printf("[ERROR] Failed to update champions: %v\n", err)
 		}
 	}()
-	
+
 	// 初始化LCU连接器
 	a.lcuConnector = NewLCUConnector(a)
-	
+
 	// 启动LCU连接器
 	go func() {
 		err := a.lcuConnector.Connect()
@@ -103,14 +103,14 @@ func (a *App) GetConfig() *Config {
 func (a *App) SaveConfig(configData map[string]interface{}) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	
+
 	a.config.UpdateConfig(configData)
 	err := a.config.SaveConfig()
 	if err != nil {
 		fmt.Printf("[ERROR] Failed to save config: %v\n", err)
 		return err
 	}
-	
+
 	fmt.Println("[INFO] Configuration saved successfully")
 	return nil
 }
@@ -124,6 +124,32 @@ func (a *App) GetStatus() *LCUStatus {
 		}
 	}
 	return a.lcuConnector.GetStatus()
+}
+
+// ReconnectLCU 重新连接LCU
+func (a *App) ReconnectLCU() error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	if a.lcuConnector != nil {
+		// 断开现有连接
+		a.lcuConnector.Disconnect()
+
+		// 重新初始化连接器
+		a.lcuConnector = NewLCUConnector(a)
+
+		// 尝试重新连接
+		go func() {
+			err := a.lcuConnector.Connect()
+			if err != nil {
+				fmt.Printf("[ERROR] Failed to reconnect to LCU: %v\n", err)
+			} else {
+				fmt.Println("[INFO] Successfully reconnected to LCU")
+			}
+		}()
+	}
+
+	return nil
 }
 
 // Greet returns a greeting for the given name

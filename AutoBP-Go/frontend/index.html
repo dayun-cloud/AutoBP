@@ -19,10 +19,14 @@
     .header-icon { width: 10px; height: 10px; fill: #e7e9ee; opacity: 0.8; }
     h1 { font-size: 14px; margin: 0; letter-spacing: .3px; }
     h1 img { height: 52px !important; transform: scale(1.6); transform-origin: left center; }
-    .status { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; max-width: 180px; margin: 0; }
+    .status { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; max-width: 220px; margin: 0; }
     .badge { padding: 2px 5px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); transition: all 0.2s ease; }
     .badge.connected { background: rgb(106, 167, 188); border-color: rgb(106, 167, 188); }
     .badge.error { background: rgb(220, 38, 127); border-color: rgb(220, 38, 127); }
+    .refresh-btn { width: 20px; height: 20px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; --wails-draggable: none; font-size: 16px; }
+    .refresh-btn:hover { opacity: 0.7; }
+    .refresh-btn svg { width: 12px; height: 12px; fill: #e7e9ee; opacity: 0.8; }
+    .refresh-btn:hover svg { opacity: 1; }
 
     /* 居中主区域 */
     main { padding: 20px 20px 0px 25px; max-width: 100%; margin: 0; display: grid; gap: 10px; }
@@ -89,6 +93,9 @@
         <div class="status">
           <span class="badge" id="lcu-status">LCU 未连接</span>
           <span class="badge" id="client-status">客户端状态未知</span>
+          <div class="refresh-btn" id="refresh-lcu" title="重新连接LCU">
+            ↻
+          </div>
         </div>
       </div>
       <div class="header-controls">
@@ -565,6 +572,19 @@
         await fetchChampions();
         await fetchConfig();
       }, 3000);
+      
+      // 绑定刷新按钮事件
+      $('#refresh-lcu').addEventListener('click', async () => {
+        try {
+          await window.go.main.App.ReconnectLCU();
+          // 立即更新状态
+          setTimeout(() => {
+            fetchStatus();
+          }, 1000);
+        } catch (error) {
+          console.error('Failed to reconnect LCU:', error);
+        }
+      });
       
       // 开始状态轮询（仅轮询状态）
       fetchStatus();
