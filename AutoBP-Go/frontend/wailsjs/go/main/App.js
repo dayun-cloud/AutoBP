@@ -25,3 +25,7 @@ export function ReconnectLCU() {
 export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }
+
+export function StartRankedQueue() {
+  return window['go']['main']['App']['StartRankedQueue']();
+}

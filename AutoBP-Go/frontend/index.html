@@ -115,13 +115,15 @@
   <main>
     <!-- 英雄选择设置 -->
     <section>
-      <!-- 秒接对局：标题 | 空白 | 开关 -->
+      <!-- 秒接对局：标题 | 按钮 | 开关 -->
       <div class="row">
         <div>
           <strong>秒接对局</strong>
           <div class="muted">匹配成功后自动接受对局</div>
         </div>
-        <div></div>
+        <div style="display: flex; justify-content: center;">
+          <button style="padding: 5px 7px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;" id="btn-start-ranked" onclick="startRankedQueue()">开始排位</button>
+        </div>
         <div class="switch" id="sw-auto-accept"><div class="knob"></div></div>
       </div>
 
@@ -340,6 +342,31 @@
       } catch (error) {
         console.error('Failed to fetch status:', error);
         updateStatusBadges({ connected: false, client_status: 'unknown' });
+      }
+    }
+
+    async function startRankedQueue() {
+      try {
+        const button = document.getElementById('btn-start-ranked');
+        button.disabled = true;
+        button.textContent = '创建中...';
+        
+        await window.go.main.App.StartRankedQueue();
+        console.log('成功创建排位赛队列');
+        
+        // 重置按钮状态
+        setTimeout(() => {
+          button.disabled = false;
+          button.textContent = '开始排位';
+        }, 2000);
+      } catch (error) {
+        console.error('创建排位赛队列失败:', error);
+        alert('创建排位赛队列失败: ' + error);
+        
+        // 重置按钮状态
+        const button = document.getElementById('btn-start-ranked');
+        button.disabled = false;
+        button.textContent = '开始排位';
       }
     }
 

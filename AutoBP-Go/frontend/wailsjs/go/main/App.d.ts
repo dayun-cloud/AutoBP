@@ -13,3 +13,5 @@ export function Greet(arg1:string):Promise<string>;
 export function ReconnectLCU():Promise<void>;
 
 export function SaveConfig(arg1:Record<string, any>):Promise<void>;
+
+export function StartRankedQueue():Promise<void>;

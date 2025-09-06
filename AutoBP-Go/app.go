@@ -152,6 +152,30 @@ func (a *App) ReconnectLCU() error {
 	return nil
 }
 
+// StartRankedQueue 开始单双排位赛
+func (a *App) StartRankedQueue() error {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+
+	if a.lcuConnector == nil || !a.lcuConnector.IsConnected() {
+		return fmt.Errorf("LCU not connected")
+	}
+
+	// 创建单双排位赛队列 (queueId: 420)
+	lobbyData := map[string]interface{}{
+		"queueId": 420,
+	}
+
+	_, err := a.lcuConnector.request("POST", "/lol-lobby/v2/lobby", lobbyData)
+	if err != nil {
+		fmt.Printf("[ERROR] Failed to create ranked lobby: %v\n", err)
+		return fmt.Errorf("failed to create ranked lobby: %w", err)
+	}
+
+	fmt.Println("[INFO] Successfully created ranked lobby")
+	return nil
+}
+
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
