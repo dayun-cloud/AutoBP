@@ -425,7 +425,7 @@
         }, 2000);
       } catch (error) {
         console.error('创建排位赛队列失败:', error);
-        alert('创建排位赛队列失败: ' + error);
+        showCustomAlert('创建排位赛队列失败: ' + error);
         
         // 重置按钮状态
         const button = document.getElementById('btn-start-ranked');
