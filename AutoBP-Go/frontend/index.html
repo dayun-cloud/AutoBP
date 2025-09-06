@@ -315,8 +315,9 @@
 
     <!-- 功能按钮 -->
     <div style="text-align: left; margin-top: 10px;">
-      <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px;" id="btn-start-ranked" onclick="startRankedQueue()">开始排位</button>
-      <button style="padding: 6px 12px; background: rgb(128, 128, 128); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;" onclick="showCustomAlert('敬请期待')">更多功能</button>
+      <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-start-ranked" onclick="startRankedQueue()">开始排位</button>
+      <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-go-home" onclick="goToMainMenu()">回主界面</button>
+      <button style="padding: 6px 12px; background: rgb(128, 128, 128); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; width: 80px;" onclick="showCustomAlert('敬请期待')">更多功能</button>
     </div>
   </main>
     
@@ -425,12 +426,37 @@
         }, 2000);
       } catch (error) {
         console.error('创建排位赛队列失败:', error);
-        showCustomAlert('创建排位赛队列失败，请检查游戏客户端状态');
+        showCustomAlert('创建失败，请检查客户端状态');
         
         // 重置按钮状态
         const button = document.getElementById('btn-start-ranked');
         button.disabled = false;
         button.textContent = '开始排位';
+      }
+    }
+
+    async function goToMainMenu() {
+      try {
+        const button = document.getElementById('btn-go-home');
+        button.disabled = true;
+        button.textContent = '返回中...';
+        
+        await window.go.main.App.GoToMainMenu();
+        console.log('成功返回主界面');
+        
+        // 重置按钮状态
+        setTimeout(() => {
+          button.disabled = false;
+          button.textContent = '回主界面';
+        }, 1000);
+      } catch (error) {
+        console.error('返回主界面失败:', error);
+        showCustomAlert('返回主界面失败，请检查客户端状态');
+        
+        // 重置按钮状态
+        const button = document.getElementById('btn-go-home');
+        button.disabled = false;
+        button.textContent = '回主界面';
       }
     }
 
