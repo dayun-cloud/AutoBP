@@ -8,8 +8,6 @@ export function GetConfig():Promise<main.Config>;
 
 export function GetStatus():Promise<main.LCUStatus>;
 
-export function GoToMainMenu():Promise<void>;
-
 export function Greet(arg1:string):Promise<string>;
 
 export function ReconnectLCU():Promise<void>;

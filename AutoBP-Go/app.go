@@ -176,32 +176,7 @@ func (a *App) StartRankedQueue() error {
 	return nil
 }
 
-// GoToMainMenu 返回主界面
-func (a *App) GoToMainMenu() error {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
 
-	if a.lcuConnector == nil || !a.lcuConnector.IsConnected() {
-		return fmt.Errorf("LCU not connected")
-	}
-
-	// 退出当前房间或队列
-	_, err := a.lcuConnector.request("DELETE", "/lol-lobby/v2/lobby", nil)
-	if err != nil {
-		// 如果删除房间失败，可能是因为不在房间中，继续尝试其他操作
-		fmt.Printf("[WARNING] Failed to delete lobby (may not be in lobby): %v\n", err)
-	}
-
-	// 取消匹配队列
-	_, err = a.lcuConnector.request("DELETE", "/lol-lobby/v2/lobby/matchmaking/search", nil)
-	if err != nil {
-		// 如果取消匹配失败，可能是因为不在匹配中
-		fmt.Printf("[WARNING] Failed to cancel matchmaking (may not be searching): %v\n", err)
-	}
-
-	fmt.Println("[INFO] Successfully returned to main menu")
-	return nil
-}
 
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {

@@ -14,10 +14,6 @@ export function GetStatus() {
   return window['go']['main']['App']['GetStatus']();
 }
 
-export function GoToMainMenu() {
-  return window['go']['main']['App']['GoToMainMenu']();
-}
-
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
