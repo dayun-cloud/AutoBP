@@ -7,10 +7,10 @@
   <title>AutoBP - 英雄联盟自动BP助手</title>
   <style>
     :root { color-scheme: light dark; }
-    body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif; margin: 0; padding: 0; background: rgb(33, 35, 39); color: #e7e9ee; min-height: 100vh; }
+    body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif; margin: 0; padding: 0; background: #1a1d23; color: #e7e9ee; min-height: 100vh; }
     
     header { padding: 12px 8px 8px 8px; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0)); border-bottom: 1px solid rgba(255,255,255,0.08); --wails-draggable: drag; user-select: none; }
-    .header-inner { width: 450px; margin: 0; padding: 0px 0px 0px 15px; display: flex; align-items: center; justify-content: space-between; --wails-draggable: drag; position: relative; }
+    .header-inner { width: 390px; margin: 0; padding: 0px 0px 0px 15px; display: flex; align-items: center; justify-content: space-between; --wails-draggable: drag; position: relative; }
     .header-left { display: flex; align-items: center; gap: 50px; --wails-draggable: drag; }
     .header-controls { display: flex; height: 30px; --wails-draggable: none; position: absolute; right: 0; top: 0; }
     .header-button { width: 35px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; --wails-draggable: none; border-radius: 4px; }
@@ -29,12 +29,12 @@
     .refresh-btn:hover svg { opacity: 1; }
 
     /* 居中主区域 */
-    main { padding: 20px 20px 0px 25px; max-width: 100%; margin: 0; display: grid; gap: 10px; }
-    section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 20px; margin: 0; width: 395px; min-height: 180px; }
+    main { padding: 10px 0px 0px 22px; max-width: 100%; margin: 0; display: grid; gap: 10px; }
+    section { background: #242830; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 15px; margin: 0; width: 345px; min-height: 180px; }
     .section-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #fff; }
 
     /* 行：标题 | 下拉 | 开关 */
-    .row { display: grid; grid-template-columns: 120px 150px 70px; align-items: center; gap: 25px; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); max-width: 100%; }
+    .row { display: grid; grid-template-columns: 70px 150px 70px; align-items: center; gap: 25px; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); max-width: 100%; }
     .row:last-child { border-bottom: 0; }
     .row > div:first-child { overflow: hidden; }
     .row strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
@@ -76,7 +76,7 @@
     .loading::after { content: "加载中..."; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 4px; font-size: 12px; }
 
     /* 响应式设计 */
-    @media (max-width: 465px) {
+    @media (max-width: 365px) {
       main { padding: 12px; }
       .row { grid-template-columns: 1fr; gap: 6px; text-align: center; }
       .dropdown { width: 100%; }
@@ -84,7 +84,55 @@
       .header-inner { padding: 0 12px; }
     }
   </style>
-</head>
+<style>
+      /* 自定义弹窗样式 */
+      .custom-alert-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 1000;
+      }
+      
+      .custom-alert-box {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: #242830;
+          border: 1px solid #30363d;
+          border-radius: 8px;
+          padding: 20px;
+          min-width: 200px;
+          max-width: 300px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+          text-align: center;
+        }
+       
+       .custom-alert-message {
+         margin-bottom: 15px;
+         font-size: 14px;
+         color: #c9d1d9;
+       }
+      
+      .custom-alert-button {
+        padding: 8px 20px;
+        background: rgb(106, 167, 188);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      
+      .custom-alert-button:hover {
+        background: rgb(86, 147, 168);
+      }
+    </style>
+  </head>
 <body>
   <header>
     <div class="header-inner">
@@ -115,15 +163,12 @@
   <main>
     <!-- 英雄选择设置 -->
     <section>
-      <!-- 秒接对局：标题 | 按钮 | 开关 -->
+      <!-- 秒接对局：标题 | 空白 | 开关 -->
       <div class="row">
         <div>
           <strong>秒接对局</strong>
-          <div class="muted">匹配成功后自动接受对局</div>
         </div>
-        <div style="display: flex; justify-content: center;">
-          <button style="padding: 5px 7px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;" id="btn-start-ranked" onclick="startRankedQueue()">开始排位</button>
-        </div>
+        <div></div>
         <div class="switch" id="sw-auto-accept"><div class="knob"></div></div>
       </div>
 
@@ -131,7 +176,6 @@
       <div class="row">
         <div>
           <strong>预选英雄</strong>
-          <div class="muted">进入选人后显示意向</div>
         </div>
         <div class="dropdown" id="dd-preselect">
           <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
@@ -149,7 +193,6 @@
       <div class="row">
         <div>
           <strong>秒禁英雄</strong>
-          <div class="muted">Ban 阶段到你时立即禁用</div>
         </div>
         <div class="dropdown" id="dd-ban">
           <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
@@ -167,7 +210,6 @@
       <div class="row">
         <div>
           <strong>秒选英雄</strong>
-          <div class="muted">Pick 阶段到你时立即锁定</div>
         </div>
         <div class="dropdown" id="dd-pick">
           <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
@@ -184,12 +226,11 @@
 
     <!-- 按位置选择英雄 -->
     <section>
-      <div class="section-title">排位优先按位置选择英雄，其他模式使用上面设置的 预选/秒选 英雄</div>
+      <div class="section-title">排位优先按位置选择英雄，其他模式使用上面的设置</div>
       <!-- 上路 -->
       <div class="row">
         <div>
           <strong>上路</strong>
-          <div class="muted">上单位置的英雄选择</div>
         </div>
         <div class="dropdown" id="dd-top">
           <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
@@ -207,7 +248,6 @@
       <div class="row">
         <div>
           <strong>打野</strong>
-          <div class="muted">打野位置的英雄选择</div>
         </div>
         <div class="dropdown" id="dd-jungle">
           <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
@@ -225,7 +265,6 @@
       <div class="row">
         <div>
           <strong>中路</strong>
-          <div class="muted">中单位置的英雄选择</div>
         </div>
         <div class="dropdown" id="dd-middle">
           <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
@@ -243,7 +282,6 @@
       <div class="row">
         <div>
           <strong>下路</strong>
-          <div class="muted">ADC位置的英雄选择</div>
         </div>
         <div class="dropdown" id="dd-bottom">
           <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
@@ -261,7 +299,6 @@
       <div class="row">
         <div>
           <strong>辅助</strong>
-          <div class="muted">辅助位置的英雄选择</div>
         </div>
         <div class="dropdown" id="dd-utility">
           <div class="dropdown-trigger"><span class="label">未选择</span><span class="arrow">▾</span></div>
@@ -275,7 +312,21 @@
         <div></div>
       </div>
     </section>
+
+    <!-- 功能按钮 -->
+    <div style="text-align: left; margin-top: 10px;">
+      <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px;" id="btn-start-ranked" onclick="startRankedQueue()">开始排位</button>
+      <button style="padding: 6px 12px; background: rgb(128, 128, 128); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;" onclick="showCustomAlert('敬请期待')">更多功能</button>
+    </div>
   </main>
+    
+    <!-- 自定义弹窗 -->
+    <div id="custom-alert-overlay" class="custom-alert-overlay" onclick="closeCustomAlert()">
+      <div class="custom-alert-box" onclick="event.stopPropagation()">
+        <div id="custom-alert-message" class="custom-alert-message"></div>
+        <button class="custom-alert-button" onclick="closeCustomAlert()">确定</button>
+      </div>
+    </div>
 
 
 
@@ -345,7 +396,20 @@
       }
     }
 
-    async function startRankedQueue() {
+    // 自定义弹窗函数
+     function showCustomAlert(message) {
+       const overlay = document.getElementById('custom-alert-overlay');
+       const messageElement = document.getElementById('custom-alert-message');
+       messageElement.textContent = message;
+       overlay.style.display = 'block';
+     }
+     
+     function closeCustomAlert() {
+       const overlay = document.getElementById('custom-alert-overlay');
+       overlay.style.display = 'none';
+     }
+     
+     async function startRankedQueue() {
       try {
         const button = document.getElementById('btn-start-ranked');
         button.disabled = true;

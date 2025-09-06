@@ -18,11 +18,11 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:           "AutoBP-Go",
-		Width:           600,
+		Width:           520,
 		Height:          900,
-		MinWidth:        600,
+		MinWidth:        520,
 		MinHeight:       900,
-		MaxWidth:        600,
+		MaxWidth:        520,
 		MaxHeight:       900,
 		DisableResize:   true,
 		Frameless:       true,
