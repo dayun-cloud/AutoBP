@@ -1,0 +1,4 @@
+build/*
+!build/appicon.png
+.vscode
+开发文档.md

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "AutoBP",
+  "outputfilename": "AutoBP",
+  "wailsjsdir": "./frontend",
+  "author": {
+    "name": "dayun",
+    "email": "dayuncloud@qq.com"
+  },
+  "info": {
+    "companyName": "dayun",
+    "productName": "AutoBP",
+    "productVersion": "1.0.1",
+    "copyright": "© 2025 大沄"
+  }
+}
