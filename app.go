@@ -176,8 +176,6 @@ func (a *App) StartRankedQueue() error {
 	return nil
 }
 
-
-
 // GoToMainMenu 回到主界面
 func (a *App) GoToMainMenu() error {
 	a.mu.RLock()
@@ -188,12 +186,12 @@ func (a *App) GoToMainMenu() error {
 		return fmt.Errorf("LCU not connected")
 	}
 
-	// 尝试离开当前lobby
+	// 尝试退出当前lobby
 	_, err := a.lcuConnector.request("DELETE", "/lol-lobby/v2/lobby", nil)
 	if err != nil {
-		// 如果没有lobby可以退出，创建一个人机入门级lobby然后退出
+		// 如果没有lobby可以退出，创建一个匹配模式lobby然后退出
 		lobbyData := map[string]interface{}{
-			"queueId": 830, // 人机入门级队列ID
+			"queueId": 430, // 匹配模式队列ID
 		}
 		_, createErr := a.lcuConnector.request("POST", "/lol-lobby/v2/lobby", lobbyData)
 		if createErr != nil {
