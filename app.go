@@ -191,8 +191,22 @@ func (a *App) GoToMainMenu() error {
 	// 尝试离开当前lobby
 	_, err := a.lcuConnector.request("DELETE", "/lol-lobby/v2/lobby", nil)
 	if err != nil {
-		fmt.Printf("[ERROR] Failed to leave lobby: %v\n", err)
-		return err
+		// 如果没有lobby可以退出，创建一个人机入门级lobby然后退出
+		lobbyData := map[string]interface{}{
+			"queueId": 830, // 人机入门级队列ID
+		}
+		_, createErr := a.lcuConnector.request("POST", "/lol-lobby/v2/lobby", lobbyData)
+		if createErr != nil {
+			fmt.Printf("[ERROR] Failed to create lobby: %v\n", createErr)
+			return createErr
+		}
+
+		// 创建成功后立即退出lobby
+		_, deleteErr := a.lcuConnector.request("DELETE", "/lol-lobby/v2/lobby", nil)
+		if deleteErr != nil {
+			fmt.Printf("[ERROR] Failed to leave created lobby: %v\n", deleteErr)
+			return deleteErr
+		}
 	}
 
 	return nil
