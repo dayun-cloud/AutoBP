@@ -134,7 +134,7 @@
         background: rgb(86, 147, 168);
       }
 
-      /* 战绩生涯弹窗样式 */
+      /* 生涯数据弹窗样式 */
       .player-profile-box {
         position: absolute;
         top: 50%;
@@ -518,7 +518,7 @@
     <div style="text-align: left; margin-top: 10px;">
       <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-go-main" onclick="goToMainMenu()">回主界面</button>
       <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-start-ranked" onclick="startRankedQueue()">开单双排</button>
-      <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-player-profile" onclick="showPlayerProfile()">战绩生涯</button>
+      <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-player-profile" onclick="showPlayerProfile()">生涯数据</button>
       <button style="padding: 6px 12px; background: rgb(128, 128, 128); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; width: 80px;" onclick="showCustomAlert('敬请期待')">更多功能</button>
     </div>
   </main>
@@ -531,7 +531,7 @@
       </div>
     </div>
 
-    <!-- 战绩生涯弹窗 -->
+    <!-- 生涯数据弹窗 -->
     <div id="player-profile-overlay" class="custom-alert-overlay" onclick="closePlayerProfile()">
       <div class="player-profile-box" onclick="event.stopPropagation()">
         <div class="profile-header">
@@ -636,7 +636,7 @@
        overlay.style.display = 'none';
      }
 
-     // 战绩生涯弹窗函数
+     // 生涯数据弹窗函数
      async function showPlayerProfile() {
        const overlay = document.getElementById('player-profile-overlay');
        const container = document.getElementById('ranked-stats-container');
