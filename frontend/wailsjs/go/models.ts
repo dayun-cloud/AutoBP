@@ -68,6 +68,58 @@ export namespace main {
 	        this.champ_select = source["champ_select"];
 	    }
 	}
+	export class PlayerProfile {
+	    summonerName: string;
+	    summonerLevel: number;
+	    profileIconId: number;
+	    accountId: number;
+	    summonerId: number;
+	    puuid: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PlayerProfile(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.summonerName = source["summonerName"];
+	        this.summonerLevel = source["summonerLevel"];
+	        this.profileIconId = source["profileIconId"];
+	        this.accountId = source["accountId"];
+	        this.summonerId = source["summonerId"];
+	        this.puuid = source["puuid"];
+	    }
+	}
+	export class RankedStats {
+	    queueType: string;
+	    tier: string;
+	    rank: string;
+	    leaguePoints: number;
+	    wins: number;
+	    losses: number;
+	    hotStreak: boolean;
+	    veteran: boolean;
+	    freshBlood: boolean;
+	    inactive: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new RankedStats(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.queueType = source["queueType"];
+	        this.tier = source["tier"];
+	        this.rank = source["rank"];
+	        this.leaguePoints = source["leaguePoints"];
+	        this.wins = source["wins"];
+	        this.losses = source["losses"];
+	        this.hotStreak = source["hotStreak"];
+	        this.veteran = source["veteran"];
+	        this.freshBlood = source["freshBlood"];
+	        this.inactive = source["inactive"];
+	    }
+	}
 
 }
 

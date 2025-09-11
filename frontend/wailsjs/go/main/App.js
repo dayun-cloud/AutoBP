@@ -10,6 +10,18 @@ export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
 
+export function GetGameVersion() {
+  return window['go']['main']['App']['GetGameVersion']();
+}
+
+export function GetPlayerProfile() {
+  return window['go']['main']['App']['GetPlayerProfile']();
+}
+
+export function GetRankedStats() {
+  return window['go']['main']['App']['GetRankedStats']();
+}
+
 export function GetStatus() {
   return window['go']['main']['App']['GetStatus']();
 }

@@ -92,6 +92,13 @@ func (a *App) GetChampions() []Champion {
 	return a.championManager.GetChampions()
 }
 
+// GetGameVersion 获取游戏版本号
+func (a *App) GetGameVersion() (string, error) {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return a.championManager.GetLatestVersion()
+}
+
 // GetConfig 获取配置
 func (a *App) GetConfig() *Config {
 	a.mu.RLock()
@@ -208,6 +215,137 @@ func (a *App) GoToMainMenu() error {
 	}
 
 	return nil
+}
+
+// PlayerProfile 玩家基本信息结构
+type PlayerProfile struct {
+	SummonerName  string `json:"summonerName"`
+	SummonerLevel int    `json:"summonerLevel"`
+	ProfileIconID int    `json:"profileIconId"`
+	AccountID     int64  `json:"accountId"`
+	SummonerID    int64  `json:"summonerId"`
+	PUUID         string `json:"puuid"`
+}
+
+// RankedStats 排位统计信息结构
+type RankedStats struct {
+	QueueType    string `json:"queueType"`
+	Tier         string `json:"tier"`
+	Rank         string `json:"rank"`
+	LeaguePoints int    `json:"leaguePoints"`
+	Wins         int    `json:"wins"`
+	Losses       int    `json:"losses"`
+	HotStreak    bool   `json:"hotStreak"`
+	Veteran      bool   `json:"veteran"`
+	FreshBlood   bool   `json:"freshBlood"`
+	Inactive     bool   `json:"inactive"`
+}
+
+// GetPlayerProfile 获取玩家基本信息
+func (a *App) GetPlayerProfile() (*PlayerProfile, error) {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+
+	if a.lcuConnector == nil || !a.lcuConnector.IsConnected() {
+		return nil, fmt.Errorf("LCU not connected")
+	}
+
+	// 获取当前召唤师信息
+	response, err := a.lcuConnector.request("GET", "/lol-summoner/v1/current-summoner", nil)
+	if err != nil {
+		fmt.Printf("[ERROR] Failed to get current summoner: %v\n", err)
+		return nil, fmt.Errorf("failed to get current summoner: %w", err)
+	}
+
+	profile := &PlayerProfile{}
+	// 优先使用gameName，如果没有则使用displayName
+	if gameName, ok := response["gameName"].(string); ok {
+		profile.SummonerName = gameName
+	} else if displayName, ok := response["displayName"].(string); ok {
+		profile.SummonerName = displayName
+	}
+	if summonerLevel, ok := response["summonerLevel"].(float64); ok {
+		profile.SummonerLevel = int(summonerLevel)
+	}
+	if profileIconID, ok := response["profileIconId"].(float64); ok {
+		profile.ProfileIconID = int(profileIconID)
+	}
+	if accountID, ok := response["accountId"].(float64); ok {
+		profile.AccountID = int64(accountID)
+	}
+	if summonerID, ok := response["summonerId"].(float64); ok {
+		profile.SummonerID = int64(summonerID)
+	}
+	if puuid, ok := response["puuid"].(string); ok {
+		profile.PUUID = puuid
+	}
+	return profile, nil
+}
+
+// GetRankedStats 获取排位统计数据
+func (a *App) GetRankedStats() ([]RankedStats, error) {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+
+	if a.lcuConnector == nil || !a.lcuConnector.IsConnected() {
+		return nil, fmt.Errorf("LCU not connected")
+	}
+
+	// 获取排位统计信息
+	response, err := a.lcuConnector.request("GET", "/lol-ranked/v1/current-ranked-stats", nil)
+	if err != nil {
+		fmt.Printf("[ERROR] Failed to get ranked stats: %v\n", err)
+		return nil, fmt.Errorf("failed to get ranked stats: %w", err)
+	}
+
+	var rankedStats []RankedStats
+
+	// 解析排位统计数据
+	if queues, ok := response["queues"].([]interface{}); ok {
+		for _, queue := range queues {
+			if queueData, ok := queue.(map[string]interface{}); ok {
+				stats := RankedStats{}
+
+				if queueType, ok := queueData["queueType"].(string); ok {
+					stats.QueueType = queueType
+					// 过滤掉TFT相关的队列，只保留召唤师峡谷排位赛
+					if queueType != "RANKED_SOLO_5x5" && queueType != "RANKED_FLEX_SR" {
+						continue
+					}
+				}
+				if tier, ok := queueData["tier"].(string); ok {
+					stats.Tier = tier
+				}
+				if rank, ok := queueData["division"].(string); ok {
+					stats.Rank = rank
+				}
+				if lp, ok := queueData["leaguePoints"].(float64); ok {
+					stats.LeaguePoints = int(lp)
+				}
+				if wins, ok := queueData["wins"].(float64); ok {
+					stats.Wins = int(wins)
+				}
+				if losses, ok := queueData["losses"].(float64); ok {
+					stats.Losses = int(losses)
+				}
+				if hotStreak, ok := queueData["isHotStreak"].(bool); ok {
+					stats.HotStreak = hotStreak
+				}
+				if veteran, ok := queueData["veteran"].(bool); ok {
+					stats.Veteran = veteran
+				}
+				if freshBlood, ok := queueData["freshBlood"].(bool); ok {
+					stats.FreshBlood = freshBlood
+				}
+				if inactive, ok := queueData["inactive"].(bool); ok {
+					stats.Inactive = inactive
+				}
+
+				rankedStats = append(rankedStats, stats)
+			}
+		}
+	}
+	return rankedStats, nil
 }
 
 // Greet returns a greeting for the given name

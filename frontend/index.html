@@ -133,6 +133,205 @@
       .custom-alert-button:hover {
         background: rgb(86, 147, 168);
       }
+
+      /* 战绩生涯弹窗样式 */
+      .player-profile-box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #242830;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        width: 400px;
+        max-height: 500px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+      }
+
+      .profile-header {
+        background: linear-gradient(135deg, rgb(106, 167, 188), rgb(86, 147, 168));
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+      }
+
+      .profile-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .profile-info {
+        flex: 1;
+        color: white;
+      }
+
+      .profile-info h3 {
+        margin: 0 0 5px 0;
+        font-size: 18px;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .profile-info p {
+        margin: 0;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .profile-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+      }
+
+      .profile-close-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .profile-content {
+        padding: 20px;
+        max-height: 350px;
+        overflow-y: auto;
+      }
+
+      .ranked-section h4 {
+        margin: 0 0 15px 0;
+        color: #e7e9ee;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .ranked-queue {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 12px;
+      }
+
+      .queue-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .queue-type {
+        font-weight: 600;
+        color: #e7e9ee;
+        font-size: 14px;
+      }
+
+      .rank-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .rank-tier {
+        font-weight: 600;
+        font-size: 16px;
+        color: rgb(106, 167, 188);
+      }
+
+      .rank-lp {
+        font-size: 14px;
+        color: #c9d1d9;
+      }
+
+      .win-loss-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .win-loss {
+        font-size: 14px;
+        color: #c9d1d9;
+      }
+
+      .win-rate {
+        font-size: 14px;
+        font-weight: 600;
+        color: rgb(106, 167, 188);
+      }
+
+      .status-badges {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      .status-badge {
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 500;
+      }
+
+      .status-badge.hot-streak {
+        background: #ff6b35;
+        color: white;
+      }
+
+      .status-badge.veteran {
+        background: #8b5a2b;
+        color: white;
+      }
+
+      .status-badge.fresh-blood {
+        background: #4caf50;
+        color: white;
+      }
+
+      .loading-text {
+        text-align: center;
+        color: #c9d1d9;
+        font-size: 14px;
+        padding: 20px;
+      }
+
+      .error-text {
+        text-align: center;
+        color: #ff6b6b;
+        font-size: 14px;
+        padding: 20px;
+      }
+
+      .no-ranked-data {
+        text-align: center;
+        color: #c9d1d9;
+        font-size: 14px;
+        padding: 20px;
+        opacity: 0.7;
+      }
     </style>
   </head>
 <body>
@@ -319,6 +518,7 @@
     <div style="text-align: left; margin-top: 10px;">
       <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-go-main" onclick="goToMainMenu()">回主界面</button>
       <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-start-ranked" onclick="startRankedQueue()">开单双排</button>
+      <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 10px; width: 80px;" id="btn-player-profile" onclick="showPlayerProfile()">战绩生涯</button>
       <button style="padding: 6px 12px; background: rgb(128, 128, 128); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; width: 80px;" onclick="showCustomAlert('敬请期待')">更多功能</button>
     </div>
   </main>
@@ -328,6 +528,30 @@
       <div class="custom-alert-box" onclick="event.stopPropagation()">
         <div id="custom-alert-message" class="custom-alert-message"></div>
         <button class="custom-alert-button" onclick="closeCustomAlert()">确定</button>
+      </div>
+    </div>
+
+    <!-- 战绩生涯弹窗 -->
+    <div id="player-profile-overlay" class="custom-alert-overlay" onclick="closePlayerProfile()">
+      <div class="player-profile-box" onclick="event.stopPropagation()">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <img id="profile-icon" src="" alt="头像" />
+          </div>
+          <div class="profile-info">
+            <h3 id="summoner-name">加载中...</h3>
+            <p id="summoner-level">等级: --</p>
+          </div>
+          <button class="profile-close-btn" onclick="closePlayerProfile()">×</button>
+        </div>
+        <div class="profile-content">
+          <div class="ranked-section">
+            <h4>排位统计</h4>
+            <div id="ranked-stats-container">
+              <div class="loading-text">正在加载排位数据...</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -410,6 +634,142 @@
      function closeCustomAlert() {
        const overlay = document.getElementById('custom-alert-overlay');
        overlay.style.display = 'none';
+     }
+
+     // 战绩生涯弹窗函数
+     async function showPlayerProfile() {
+       const overlay = document.getElementById('player-profile-overlay');
+       const container = document.getElementById('ranked-stats-container');
+       
+       // 显示弹窗
+       overlay.style.display = 'block';
+       
+       // 重置状态
+       document.getElementById('summoner-name').textContent = '加载中...';
+       document.getElementById('summoner-level').textContent = '等级: --';
+       document.getElementById('profile-icon').src = '';
+       container.innerHTML = '<div class="loading-text">正在加载排位数据...</div>';
+       
+       try {
+         // 获取玩家基本信息
+         const profile = await window.go.main.App.GetPlayerProfile();
+         
+         // 更新基本信息
+         document.getElementById('summoner-name').textContent = profile.summonerName || '未知召唤师';
+         document.getElementById('summoner-level').textContent = `等级: ${profile.summonerLevel || '--'}`;
+         
+         // 设置头像
+         if (profile.profileIconId) {
+           try {
+             // 使用champion.go中的版本号
+             const version = await window.go.main.App.GetGameVersion();
+             document.getElementById('profile-icon').src = `https://ddragon.leagueoflegends.com/cdn/${version}/img/profileicon/${profile.profileIconId}.png`;
+           } catch (error) {
+             console.error('获取游戏版本失败，使用默认版本:', error);
+             // 如果获取版本失败，使用一个相对稳定的版本号
+             document.getElementById('profile-icon').src = `https://ddragon.leagueoflegends.com/cdn/15.18.1/img/profileicon/${profile.profileIconId}.png`;
+           }
+         }
+         
+         // 获取排位统计
+         const rankedStats = await window.go.main.App.GetRankedStats();
+         
+         // 显示排位数据
+         displayRankedStats(rankedStats);
+         
+       } catch (error) {
+         console.error('获取玩家信息失败:', error);
+         container.innerHTML = '<div class="error-text">获取数据失败，请检查LCU连接状态</div>';
+       }
+     }
+     
+     function closePlayerProfile() {
+       const overlay = document.getElementById('player-profile-overlay');
+       overlay.style.display = 'none';
+     }
+     
+     function displayRankedStats(rankedStats) {
+       const container = document.getElementById('ranked-stats-container');
+       
+       if (!rankedStats || rankedStats.length === 0) {
+         container.innerHTML = '<div class="no-ranked-data">暂无排位数据</div>';
+         return;
+       }
+       
+       let html = '';
+       
+       rankedStats.forEach(stats => {
+         const queueName = getQueueName(stats.queueType);
+         const tierName = getTierName(stats.tier);
+         const rankName = getRankName(stats.rank);
+         const totalGames = stats.wins + stats.losses;
+         const winRate = totalGames > 0 ? Math.round((stats.wins / totalGames) * 100) : 0;
+         
+         html += `
+           <div class="ranked-queue">
+             <div class="queue-header">
+               <div class="queue-type">${queueName}</div>
+               <div class="rank-info">
+                 <span class="rank-tier">${tierName} ${rankName}</span>
+                 <span class="rank-lp">${stats.leaguePoints} 胜点</span>
+               </div>
+             </div>
+             <div class="win-loss-stats">
+               <div class="win-loss">${stats.wins}胜 ${stats.losses}负</div>
+               <div class="win-rate">${winRate}% 胜率</div>
+             </div>`;
+         
+         // 添加状态标签
+         const badges = [];
+         if (stats.hotStreak) badges.push('<span class="status-badge hot-streak">连胜</span>');
+         if (stats.veteran) badges.push('<span class="status-badge veteran">老兵</span>');
+         if (stats.freshBlood) badges.push('<span class="status-badge fresh-blood">新血</span>');
+         
+         if (badges.length > 0) {
+           html += `<div class="status-badges">${badges.join('')}</div>`;
+         }
+         
+         html += '</div>';
+       });
+       
+       container.innerHTML = html;
+     }
+     
+     function getQueueName(queueType) {
+       const queueNames = {
+         'RANKED_SOLO_5x5': '单双排位',
+         'RANKED_FLEX_SR': '灵活排位',
+         'RANKED_FLEX_TT': '扭曲丛林',
+         'RANKED_TFT': '云顶之弈'
+       };
+       return queueNames[queueType] || queueType;
+     }
+     
+     function getTierName(tier) {
+       const tierNames = {
+         'IRON': '坚韧黑铁',
+         'BRONZE': '英勇黄铜', 
+         'SILVER': '不屈白银',
+         'GOLD': '荣耀黄金',
+         'PLATINUM': '华贵铂金',
+         'EMERALD': '流光翡翠',
+         'DIAMOND': '璀璨钻石',
+         'MASTER': '超凡大师',
+         'GRANDMASTER': '傲世宗师',
+         'CHALLENGER': '最强王者'
+       };
+       return tierNames[tier] || tier;
+     }
+     
+     function getRankName(rank) {
+       const rankNames = {
+         'I': 'I',
+         'II': 'II', 
+         'III': 'III',
+         'IV': 'IV',
+         'V': 'V'
+       };
+       return rankNames[rank] || rank;
      }
      
      async function startRankedQueue() {

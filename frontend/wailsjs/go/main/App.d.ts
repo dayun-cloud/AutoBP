@@ -6,6 +6,12 @@ export function GetChampions():Promise<Array<main.Champion>>;
 
 export function GetConfig():Promise<main.Config>;
 
+export function GetGameVersion():Promise<string>;
+
+export function GetPlayerProfile():Promise<main.PlayerProfile>;
+
+export function GetRankedStats():Promise<Array<main.RankedStats>>;
+
 export function GetStatus():Promise<main.LCUStatus>;
 
 export function GoToMainMenu():Promise<void>;
