@@ -226,60 +226,40 @@
         font-weight: 600;
       }
 
-      .ranked-queue {
+      .ranked-container {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 8px;
         padding: 15px;
-        margin-bottom: 12px;
-      }
-
-      .queue-header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
+        flex-direction: column;
+        gap: 12px;
       }
 
-      .queue-type {
+      .ranked-item {
+        display: grid;
+        grid-template-columns: 160px 90px 65px;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 0;
+      }
+
+      .queue-name {
         font-weight: 600;
         color: #e7e9ee;
         font-size: 14px;
       }
 
-      .rank-info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .rank-tier {
+      .rank-display {
         font-weight: 600;
         font-size: 16px;
         color: rgb(106, 167, 188);
       }
 
-      .rank-lp {
+      .lp-display {
         font-size: 14px;
         color: #c9d1d9;
-      }
-
-      .win-loss-stats {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 8px;
-      }
-
-      .win-loss {
-        font-size: 14px;
-        color: #c9d1d9;
-      }
-
-      .win-rate {
-        font-size: 14px;
-        font-weight: 600;
-        color: rgb(106, 167, 188);
+        text-align: right;
       }
 
       .status-badges {
@@ -546,7 +526,6 @@
         </div>
         <div class="profile-content">
           <div class="ranked-section">
-            <h4>排位统计</h4>
             <div id="ranked-stats-container">
               <div class="loading-text">正在加载排位数据...</div>
             </div>
@@ -696,51 +675,35 @@
          return;
        }
        
-       let html = '';
+       // 排序：单双排位在前，灵活排位在后
+       const sortedStats = rankedStats.sort((a, b) => {
+         const order = { 'RANKED_SOLO_5x5': 1, 'RANKED_FLEX_SR': 2 };
+         return (order[a.queueType] || 999) - (order[b.queueType] || 999);
+       });
        
-       rankedStats.forEach(stats => {
+       let html = '<div class="ranked-container">';
+       
+       sortedStats.forEach(stats => {
          const queueName = getQueueName(stats.queueType);
          const tierName = getTierName(stats.tier);
          const rankName = getRankName(stats.rank);
-         const totalGames = stats.wins + stats.losses;
-         const winRate = totalGames > 0 ? Math.round((stats.wins / totalGames) * 100) : 0;
          
          html += `
-           <div class="ranked-queue">
-             <div class="queue-header">
-               <div class="queue-type">${queueName}</div>
-               <div class="rank-info">
-                 <span class="rank-tier">${tierName} ${rankName}</span>
-                 <span class="rank-lp">${stats.leaguePoints} 胜点</span>
-               </div>
-             </div>
-             <div class="win-loss-stats">
-               <div class="win-loss">${stats.wins}胜 ${stats.losses}负</div>
-               <div class="win-rate">${winRate}% 胜率</div>
-             </div>`;
-         
-         // 添加状态标签
-         const badges = [];
-         if (stats.hotStreak) badges.push('<span class="status-badge hot-streak">连胜</span>');
-         if (stats.veteran) badges.push('<span class="status-badge veteran">老兵</span>');
-         if (stats.freshBlood) badges.push('<span class="status-badge fresh-blood">新血</span>');
-         
-         if (badges.length > 0) {
-           html += `<div class="status-badges">${badges.join('')}</div>`;
-         }
-         
-         html += '</div>';
+           <div class="ranked-item">
+             <div class="queue-name">${queueName}</div>
+             <div class="rank-display">${tierName} ${rankName}</div>
+             <div class="lp-display">${stats.leaguePoints} 胜点</div>
+           </div>`;
        });
        
+       html += '</div>';
        container.innerHTML = html;
      }
      
      function getQueueName(queueType) {
        const queueNames = {
          'RANKED_SOLO_5x5': '单双排位',
-         'RANKED_FLEX_SR': '灵活排位',
-         'RANKED_FLEX_TT': '扭曲丛林',
-         'RANKED_TFT': '云顶之弈'
+         'RANKED_FLEX_SR': '灵活排位'
        };
        return queueNames[queueType] || queueType;
      }
