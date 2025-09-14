@@ -721,7 +721,7 @@
          'GRANDMASTER': '傲世宗师',
          'CHALLENGER': '最强王者'
        };
-       return tierNames[tier] || tier;
+       return tierNames[tier] || (tier && tier !== 'NA' ? tier : '-');
      }
      
      function getRankName(rank) {
@@ -732,7 +732,7 @@
          'IV': 'IV',
          'V': 'V'
        };
-       return rankNames[rank] || rank;
+       return rankNames[rank] || (rank && rank !== 'NA' ? rank : '-');
      }
      
      async function startRankedQueue() {
