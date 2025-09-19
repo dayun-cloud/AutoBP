@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-// GetUserDataDir 获取用户数据目录下的AutoBP文件夹路径
+// GetUserDataDir 获取用户数据目录下的AutoBP.exe文件夹路径
 func GetUserDataDir() (string, error) {
 	// 获取APPDATA目录
 	appData := os.Getenv("APPDATA")
@@ -18,9 +18,9 @@ func GetUserDataDir() (string, error) {
 		appData = userHome
 	}
 	
-	// 创建AutoBP文件夹路径
-	// 通常生成在: C:\Users\用户名\AppData\Roaming\AutoBP\
-	autoBPDir := filepath.Join(appData, "AutoBP")
+	// 使用Wails的标准数据目录：%APPDATA%\[BinaryName.exe]
+	// 通常生成在: C:\Users\用户名\AppData\Roaming\AutoBP.exe\
+	autoBPDir := filepath.Join(appData, "AutoBP.exe")
 	
 	// 确保目录存在
 	if err := os.MkdirAll(autoBPDir, 0755); err != nil {
