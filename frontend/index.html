@@ -118,6 +118,7 @@
          word-wrap: break-word;
          word-break: break-all;
          line-height: 1.4;
+         white-space: pre-wrap;
        }
       
       .custom-alert-button {
@@ -132,6 +133,12 @@
       
       .custom-alert-button:hover {
         background: rgb(86, 147, 168);
+      }
+
+      /* 修复下拉选项在白色背景下文字不可见的问题 */
+      select option {
+        background: #242830;
+        color: white;
       }
 
       /* 生涯数据弹窗样式 */
@@ -499,6 +506,7 @@
       <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; width: 80px;" id="btn-go-main" onclick="goToMainMenu()">回主界面</button>
       <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; width: 80px;" id="btn-start-ranked" onclick="startRankedQueue()">开单双排</button>
       <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; width: 80px;" id="btn-player-profile" onclick="showPlayerProfile()">生涯数据</button>
+      <button style="padding: 6px 12px; background: rgb(106, 167, 188); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; width: 80px;" id="btn-social-features" onclick="showSocialFeatures()">社交功能</button>
       <button style="padding: 6px 12px; background: rgb(128, 128, 128); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; width: 80px;" onclick="showCustomAlert('敬请期待')">更多功能</button>
     </div>
   </main>
@@ -508,6 +516,30 @@
       <div class="custom-alert-box" onclick="event.stopPropagation()">
         <div id="custom-alert-message" class="custom-alert-message"></div>
         <button class="custom-alert-button" onclick="closeCustomAlert()">确定</button>
+      </div>
+    </div>
+
+    <!-- 社交功能弹窗 -->
+    <div id="social-features-overlay" class="custom-alert-overlay" onclick="closeSocialFeatures()">
+      <div class="custom-alert-box" onclick="event.stopPropagation()" style="width: 280px;">
+        <div class="custom-alert-message" style="font-size: 16px; font-weight: bold; margin-bottom: 20px;">社交功能</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="custom-alert-button" onclick="showStatusMessageDialog(); closeSocialFeatures()">自定义签名</button>
+          <button class="custom-alert-button" onclick="showRankDisguiseDialog(); closeSocialFeatures()">段位伪装</button>
+        </div>
+        <button class="custom-alert-button" style="background: rgb(128, 128, 128); margin-top: 15px; width: 100%;" onclick="closeSocialFeatures()">关闭</button>
+      </div>
+    </div>
+
+    <!-- 输入弹窗 (用于自定义签名) -->
+    <div id="custom-prompt-overlay" class="custom-alert-overlay" onclick="closeCustomPrompt()">
+      <div class="custom-alert-box" onclick="event.stopPropagation()">
+        <div id="custom-prompt-message" class="custom-alert-message"></div>
+        <input type="text" id="custom-prompt-input" style="width: 100%; padding: 8px; margin-bottom: 15px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 4px; color: white; box-sizing: border-box;" />
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button class="custom-alert-button" onclick="submitCustomPrompt()">确定</button>
+          <button class="custom-alert-button" style="background: rgb(128, 128, 128);" onclick="closeCustomPrompt()">取消</button>
+        </div>
       </div>
     </div>
 
@@ -535,6 +567,40 @@
     </div>
 
 
+
+    <!-- 段位伪装弹窗 -->
+    <div id="rank-disguise-overlay" class="custom-alert-overlay" onclick="closeRankDisguise()">
+      <div class="custom-alert-box" onclick="event.stopPropagation()">
+        <div class="custom-alert-message">段位伪装设置</div>
+        <select id="rank-queue-select" style="width: 100%; padding: 8px; margin-bottom: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 4px; color: white;">
+          <option value="RANKED_SOLO_5x5">单双排位</option>
+          <option value="RANKED_FLEX_SR">灵活排位</option>
+          <option value="RANKED_TFT">云顶之弈</option>
+        </select>
+        <select id="rank-tier-select" style="width: 100%; padding: 8px; margin-bottom: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 4px; color: white;">
+          <option value="IRON">坚韧黑铁</option>
+          <option value="BRONZE">英勇黄铜</option>
+          <option value="SILVER">不屈白银</option>
+          <option value="GOLD">荣耀黄金</option>
+          <option value="PLATINUM">华贵铂金</option>
+          <option value="EMERALD">流光翡翠</option>
+          <option value="DIAMOND">璀璨钻石</option>
+          <option value="MASTER">超凡大师</option>
+          <option value="GRANDMASTER">傲世宗师</option>
+          <option value="CHALLENGER">最强王者</option>
+        </select>
+        <select id="rank-division-select" style="width: 100%; padding: 8px; margin-bottom: 15px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 4px; color: white;">
+          <option value="I">I</option>
+          <option value="II">II</option>
+          <option value="III">III</option>
+          <option value="IV">IV</option>
+        </select>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button class="custom-alert-button" onclick="submitRankDisguise()">确定</button>
+          <button class="custom-alert-button" style="background: rgb(128, 128, 128);" onclick="closeRankDisguise()">取消</button>
+        </div>
+      </div>
+    </div>
 
   <script type="module" src="./wailsjs/runtime/runtime.js"></script>
   <script>
@@ -1046,6 +1112,67 @@
 
     // 页面加载完成后初始化
     document.addEventListener('DOMContentLoaded', init);
+
+    // 社交功能相关
+    let customPromptCallback = null;
+
+    function showSocialFeatures() {
+      document.getElementById('social-features-overlay').style.display = 'block';
+    }
+
+    function closeSocialFeatures() {
+      document.getElementById('social-features-overlay').style.display = 'none';
+    }
+
+    function showStatusMessageDialog() {
+      const overlay = document.getElementById('custom-prompt-overlay');
+      document.getElementById('custom-prompt-message').textContent = '请输入自定义签名：';
+      document.getElementById('custom-prompt-input').value = '';
+      overlay.style.display = 'block';
+      customPromptCallback = async (val) => {
+        try {
+          await window.go.main.App.UpdateStatusMessage(val);
+          showCustomAlert('自定义签名更新成功！');
+        } catch (e) {
+          showCustomAlert('更新失败：' + e);
+        }
+      };
+    }
+
+    function closeCustomPrompt() {
+      document.getElementById('custom-prompt-overlay').style.display = 'none';
+      customPromptCallback = null;
+    }
+
+    function submitCustomPrompt() {
+      if (customPromptCallback) {
+        customPromptCallback(document.getElementById('custom-prompt-input').value);
+      }
+      closeCustomPrompt();
+    }
+
+    function showRankDisguiseDialog() {
+      document.getElementById('rank-disguise-overlay').style.display = 'block';
+    }
+
+    function closeRankDisguise() {
+      document.getElementById('rank-disguise-overlay').style.display = 'none';
+    }
+
+    async function submitRankDisguise() {
+      const queue = document.getElementById('rank-queue-select').value;
+      const tier = document.getElementById('rank-tier-select').value;
+      const division = document.getElementById('rank-division-select').value;
+      closeRankDisguise();
+      try {
+        await window.go.main.App.SetRankDisguise(tier, division, queue);
+        showCustomAlert('段位伪装设置成功！');
+      } catch (e) {
+        showCustomAlert('设置失败：' + e);
+      }
+    }
+
+
   </script>
   <script type="module" src="./wailsjs/runtime/runtime.js"></script>
 </body>

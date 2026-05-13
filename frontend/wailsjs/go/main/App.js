@@ -42,6 +42,14 @@ export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }
 
+export function SetRankDisguise(arg1, arg2, arg3) {
+  return window['go']['main']['App']['SetRankDisguise'](arg1, arg2, arg3);
+}
+
 export function StartRankedQueue() {
   return window['go']['main']['App']['StartRankedQueue']();
+}
+
+export function UpdateStatusMessage(arg1) {
+  return window['go']['main']['App']['UpdateStatusMessage'](arg1);
 }

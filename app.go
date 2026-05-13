@@ -352,3 +352,59 @@ func (a *App) GetRankedStats() ([]RankedStats, error) {
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
+
+// UpdateStatusMessage 更新自定义签名
+func (a *App) UpdateStatusMessage(message string) error {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+
+	if a.lcuConnector == nil || !a.lcuConnector.IsConnected() {
+		return fmt.Errorf("LCU not connected")
+	}
+
+	// 先获取当前的 me 数据
+	me, err := a.lcuConnector.request("GET", "/lol-chat/v1/me", nil)
+	if err != nil {
+		return fmt.Errorf("failed to get me: %w", err)
+	}
+
+	me["statusMessage"] = message
+
+	_, err = a.lcuConnector.request("PUT", "/lol-chat/v1/me", me)
+	if err != nil {
+		return fmt.Errorf("failed to update status message: %w", err)
+	}
+
+	return nil
+}
+
+// SetRankDisguise 设置段位伪装
+func (a *App) SetRankDisguise(tier string, division string, queue string) error {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+
+	if a.lcuConnector == nil || !a.lcuConnector.IsConnected() {
+		return fmt.Errorf("LCU not connected")
+	}
+
+	me, err := a.lcuConnector.request("GET", "/lol-chat/v1/me", nil)
+	if err != nil {
+		return fmt.Errorf("failed to get me: %w", err)
+	}
+
+	if lol, ok := me["lol"].(map[string]interface{}); ok {
+		lol["rankedLeagueTier"] = tier
+		lol["rankedLeagueDivision"] = division
+		lol["rankedLeagueQueue"] = queue
+		me["lol"] = lol
+	} else {
+		return fmt.Errorf("lol data not found")
+	}
+
+	_, err = a.lcuConnector.request("PUT", "/lol-chat/v1/me", me)
+	if err != nil {
+		return fmt.Errorf("failed to set rank disguise: %w", err)
+	}
+
+	return nil
+}
