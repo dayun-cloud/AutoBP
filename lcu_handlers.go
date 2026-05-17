@@ -10,11 +10,11 @@ func (lcu *LCUConnector) handleReadyCheck(_ interface{}) {
 	if !lcu.app.config.AutoAcceptEnabled {
 		return
 	}
-	
+
 	if lcu.readyCheckAccepted {
 		return
 	}
-	
+
 	lcu.readyCheckAccepted = true
 	go lcu.acceptReadyCheck()
 }
@@ -25,13 +25,17 @@ func (lcu *LCUConnector) handleGameflowPhase(eventData interface{}) {
 	if !ok {
 		return
 	}
-	
+
 	lcu.statusLock.Lock()
 	lcu.status.ClientStatus = phase
 	lcu.statusLock.Unlock()
-	
+
 	fmt.Printf("[INFO] Game phase changed to: %s\n", phase)
-	
+
+	if phase == "EndOfGame" {
+		go lcu.reapplyRankDisguiseAfterGame()
+	}
+
 	// 清理状态
 	switch phase {
 	case "Lobby", "Matchmaking", "ReadyCheck":
@@ -57,34 +61,64 @@ func (lcu *LCUConnector) handleChampSelect(eventData interface{}) {
 	if !ok || data == nil {
 		return
 	}
-	
+
 	// 更新英雄选择状态
 	lcu.statusLock.Lock()
 	lcu.status.ChampSelect = data
 	lcu.statusLock.Unlock()
-	
+
 	localCellID := lcu.getLocalPlayerCellID(data)
 	if localCellID == -1 {
 		return
 	}
-	
+
 	timer, _ := data["timer"].(map[string]interface{})
 	phase, _ := timer["phase"].(string)
-	
+
 	// 处理预选英雄
 	if lcu.app.config.PreselectEnabled && (phase == "PLANNING" || phase == "BAN_PICK" || phase == "FINALIZATION") {
 		lcu.handlePreselect(data, localCellID)
 	}
-	
+
 	// 处理自动Ban
 	if lcu.app.config.AutoBanEnabled && lcu.app.config.AutoBanChampionID != nil && phase == "BAN_PICK" {
 		lcu.handleAutoBan(data, localCellID)
 	}
-	
+
 	// 处理自动Pick
 	if lcu.app.config.AutoPickEnabled && (phase == "BAN_PICK" || phase == "FINALIZATION") {
 		lcu.handleAutoPick(data, localCellID)
 	}
+}
+
+func (lcu *LCUConnector) reapplyRankDisguiseAfterGame() {
+	if !lcu.app.config.RankDisguiseEnabled {
+		return
+	}
+
+	time.Sleep(1 * time.Second)
+
+	if err := lcu.app.ApplySavedRankDisguise(); err != nil {
+		fmt.Printf("[WARNING] Failed to reapply rank disguise after game: %v\n", err)
+		return
+	}
+
+	fmt.Println("[INFO] Reapplied rank disguise after game")
+}
+
+func (lcu *LCUConnector) reapplyRankDisguiseAfterConnect() {
+	if !lcu.app.config.RankDisguiseEnabled {
+		return
+	}
+
+	time.Sleep(1 * time.Second)
+
+	if err := lcu.app.ApplySavedRankDisguise(); err != nil {
+		fmt.Printf("[WARNING] Failed to reapply rank disguise after LCU connect: %v\n", err)
+		return
+	}
+
+	fmt.Println("[INFO] Reapplied rank disguise after LCU connect")
 }
 
 // acceptReadyCheck 自动接受对局
@@ -93,11 +127,11 @@ func (lcu *LCUConnector) acceptReadyCheck() {
 	lcu.statusLock.Lock()
 	currentPhase := lcu.status.ClientStatus
 	lcu.statusLock.Unlock()
-	
+
 	if currentPhase != "ReadyCheck" {
 		return
 	}
-	
+
 	_, err := lcu.request("POST", "/lol-matchmaking/v1/ready-check/accept", nil)
 	if err != nil {
 		fmt.Printf("[ERROR] Failed to accept ready check: %v\n", err)
@@ -109,10 +143,10 @@ func (lcu *LCUConnector) acceptReadyCheck() {
 // handlePreselect 处理预选英雄
 func (lcu *LCUConnector) handlePreselect(data map[string]interface{}, localCellID int) {
 	var currentChampion *int
-	
+
 	// 获取玩家分配的位置
 	position := lcu.getPlayerAssignedPosition(data, localCellID)
-	
+
 	if position != "" {
 		// 有分配位置，按位置预选英雄
 		currentChampion = lcu.app.config.GetChampionIDForPosition(position)
@@ -137,39 +171,39 @@ func (lcu *LCUConnector) handlePreselect(data map[string]interface{}, localCellI
 			return
 		}
 	}
-	
+
 	if currentChampion == nil {
 		return
 	}
-	
+
 	// 检查当前选择的英雄是否已经是目标英雄
 	currentPickIntent := lcu.getCurrentPickIntent(data, localCellID)
 	if currentPickIntent == *currentChampion && lcu.lastPreselectChampion != nil && *lcu.lastPreselectChampion == *currentChampion {
 		return
 	}
-	
+
 	// 尝试预选
 	action := lcu.getPickActionForPreselect(data, localCellID)
 	if action == nil {
 		return
 	}
-	
+
 	actionID := lcu.getActionID(action)
 	if actionID == -1 {
 		return
 	}
-	
+
 	actionKey := fmt.Sprintf("%d_pick_preselect", actionID)
 	if lcu.isActionProcessed(actionKey) {
 		return
 	}
-	
+
 	if position != "" {
 		fmt.Printf("[INFO] Attempting to preselect position-based champion %d for %s\n", *currentChampion, position)
 	} else {
 		fmt.Printf("[INFO] Attempting to preselect default champion %d\n", *currentChampion)
 	}
-	
+
 	success := lcu.patchAction(actionID, *currentChampion, false)
 	if success {
 		lcu.lastPreselectChampion = currentChampion
@@ -186,25 +220,25 @@ func (lcu *LCUConnector) handleAutoBan(data map[string]interface{}, localCellID 
 	if action == nil {
 		return
 	}
-	
+
 	actionID := lcu.getActionID(action)
 	if actionID == -1 {
 		return
 	}
-	
+
 	actionKey := fmt.Sprintf("%d_ban", actionID)
 	if lcu.isActionProcessed(actionKey) {
 		return
 	}
-	
+
 	championID := *lcu.app.config.AutoBanChampionID
 	fmt.Printf("[INFO] Auto banning champion %d (action %d)\n", championID, actionID)
-	
+
 	lcu.addProcessedAction(actionKey)
-	
+
 	// 延迟0.5秒
 	time.Sleep(500 * time.Millisecond)
-	
+
 	success := lcu.patchAction(actionID, championID, true)
 	if success {
 		fmt.Printf("[INFO] Successfully banned champion %d\n", championID)
@@ -219,22 +253,22 @@ func (lcu *LCUConnector) handleAutoPick(data map[string]interface{}, localCellID
 	if action == nil {
 		return
 	}
-	
+
 	actionID := lcu.getActionID(action)
 	if actionID == -1 {
 		return
 	}
-	
+
 	actionKey := fmt.Sprintf("%d_pick_completed", actionID)
 	if lcu.isActionProcessed(actionKey) {
 		return
 	}
-	
+
 	var championID *int
-	
+
 	// 获取玩家分配的位置
 	position := lcu.getPlayerAssignedPosition(data, localCellID)
-	
+
 	if position != "" {
 		// 有分配位置，按位置选择英雄
 		championID = lcu.app.config.GetChampionIDForPosition(position)
@@ -259,22 +293,22 @@ func (lcu *LCUConnector) handleAutoPick(data map[string]interface{}, localCellID
 			return
 		}
 	}
-	
+
 	if championID == nil {
 		return
 	}
-	
+
 	if position != "" {
 		fmt.Printf("[INFO] Auto picking position-based champion %d for %s (action %d)\n", *championID, position, actionID)
 	} else {
 		fmt.Printf("[INFO] Auto picking default champion %d (action %d)\n", *championID, actionID)
 	}
-	
+
 	lcu.addProcessedAction(actionKey)
-	
+
 	// 延迟0.5秒
 	time.Sleep(500 * time.Millisecond)
-	
+
 	success := lcu.patchAction(actionID, *championID, true)
 	if success {
 		fmt.Printf("[INFO] Successfully picked and locked champion %d\n", *championID)
@@ -299,12 +333,12 @@ func (lcu *LCUConnector) getPlayerAssignedPosition(data map[string]interface{}, 
 	if !ok {
 		return ""
 	}
-	
+
 	for _, player := range myTeam {
 		if playerMap, ok := player.(map[string]interface{}); ok {
 			cellID, cellIDOk := playerMap["cellId"].(float64)
 			position, positionOk := playerMap["assignedPosition"].(string)
-			
+
 			if cellIDOk && int(cellID) == localCellID {
 				if positionOk && position != "" {
 					return position
@@ -314,7 +348,7 @@ func (lcu *LCUConnector) getPlayerAssignedPosition(data map[string]interface{}, 
 			}
 		}
 	}
-	
+
 	return ""
 }
 
@@ -324,7 +358,7 @@ func (lcu *LCUConnector) getCurrentPickIntent(data map[string]interface{}, local
 	if !ok {
 		return -1
 	}
-	
+
 	for _, player := range myTeam {
 		if playerMap, ok := player.(map[string]interface{}); ok {
 			if cellID, ok := playerMap["cellId"].(float64); ok && int(cellID) == localCellID {
@@ -334,7 +368,7 @@ func (lcu *LCUConnector) getCurrentPickIntent(data map[string]interface{}, local
 			}
 		}
 	}
-	
+
 	return -1
 }
 
@@ -344,7 +378,7 @@ func (lcu *LCUConnector) getCurrentAction(data map[string]interface{}, localCell
 	if !ok {
 		return nil
 	}
-	
+
 	for _, actionGroup := range actions {
 		if group, ok := actionGroup.([]interface{}); ok {
 			for _, action := range group {
@@ -353,7 +387,7 @@ func (lcu *LCUConnector) getCurrentAction(data map[string]interface{}, localCell
 					completed, _ := actionMap["completed"].(bool)
 					aType, _ := actionMap["type"].(string)
 					isInProgress, _ := actionMap["isInProgress"].(bool)
-					
+
 					if int(actorCellID) == localCellID && !completed && aType == actionType && isInProgress {
 						return actionMap
 					}
@@ -361,7 +395,7 @@ func (lcu *LCUConnector) getCurrentAction(data map[string]interface{}, localCell
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -371,7 +405,7 @@ func (lcu *LCUConnector) getPickActionForPreselect(data map[string]interface{}, 
 	if !ok {
 		return nil
 	}
-	
+
 	for _, actionGroup := range actions {
 		if group, ok := actionGroup.([]interface{}); ok {
 			for _, action := range group {
@@ -379,7 +413,7 @@ func (lcu *LCUConnector) getPickActionForPreselect(data map[string]interface{}, 
 					actorCellID, _ := actionMap["actorCellId"].(float64)
 					completed, _ := actionMap["completed"].(bool)
 					aType, _ := actionMap["type"].(string)
-					
+
 					if int(actorCellID) == localCellID && !completed && aType == "pick" {
 						return actionMap
 					}
@@ -387,7 +421,7 @@ func (lcu *LCUConnector) getPickActionForPreselect(data map[string]interface{}, 
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -406,7 +440,7 @@ func (lcu *LCUConnector) patchAction(actionID int, championID int, completed boo
 		"championId": championID,
 		"completed":  completed,
 	}
-	
+
 	_, err := lcu.request("PATCH", path, payload)
 	return err == nil
 }
@@ -418,7 +452,7 @@ func (lcu *LCUConnector) updateChampSelectDetails() {
 		fmt.Printf("[ERROR] Failed to get champ select details: %v\n", err)
 		return
 	}
-	
+
 	lcu.statusLock.Lock()
 	lcu.status.ChampSelect = result
 	lcu.statusLock.Unlock()

@@ -7,10 +7,16 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 //go:embed all:frontend/*
 var assets embed.FS
+
+func (a *App) onSecondInstanceLaunch(options.SecondInstanceData) {
+	runtime.WindowUnminimise(a.ctx)
+	runtime.Show(a.ctx)
+}
 
 func main() {
 	// Create an instance of the app structure
@@ -37,6 +43,10 @@ func main() {
 		OnDomReady:       app.domReady,
 		OnBeforeClose:    app.beforeClose,
 		OnShutdown:       app.shutdown,
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "8f7f6d1d-4e8f-4f68-9d84-7f5f7b0db9a1",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
 		Windows: &windows.Options{
 			ZoomFactor:           1.25,
 			IsZoomControlEnabled: false,

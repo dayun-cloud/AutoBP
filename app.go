@@ -380,6 +380,25 @@ func (a *App) UpdateStatusMessage(message string) error {
 
 // SetRankDisguise 设置段位伪装
 func (a *App) SetRankDisguise(tier string, division string, queue string) error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	if a.lcuConnector == nil || !a.lcuConnector.IsConnected() {
+		return fmt.Errorf("LCU not connected")
+	}
+
+	a.config.RankDisguiseEnabled = true
+	a.config.RankDisguiseTier = tier
+	a.config.RankDisguiseDivision = division
+	a.config.RankDisguiseQueue = queue
+	if err := a.config.SaveConfig(); err != nil {
+		return fmt.Errorf("failed to save rank disguise config: %w", err)
+	}
+
+	return a.applyRankDisguiseLocked()
+}
+
+func (a *App) ApplySavedRankDisguise() error {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
@@ -387,19 +406,36 @@ func (a *App) SetRankDisguise(tier string, division string, queue string) error 
 		return fmt.Errorf("LCU not connected")
 	}
 
+	if !a.config.RankDisguiseEnabled {
+		return nil
+	}
+
+	return a.applyRankDisguiseWithValues(a.config.RankDisguiseTier, a.config.RankDisguiseDivision, a.config.RankDisguiseQueue)
+}
+
+func (a *App) applyRankDisguiseLocked() error {
+	if !a.config.RankDisguiseEnabled {
+		return nil
+	}
+
+	return a.applyRankDisguiseWithValues(a.config.RankDisguiseTier, a.config.RankDisguiseDivision, a.config.RankDisguiseQueue)
+}
+
+func (a *App) applyRankDisguiseWithValues(tier string, division string, queue string) error {
 	me, err := a.lcuConnector.request("GET", "/lol-chat/v1/me", nil)
 	if err != nil {
 		return fmt.Errorf("failed to get me: %w", err)
 	}
 
-	if lol, ok := me["lol"].(map[string]interface{}); ok {
-		lol["rankedLeagueTier"] = tier
-		lol["rankedLeagueDivision"] = division
-		lol["rankedLeagueQueue"] = queue
-		me["lol"] = lol
-	} else {
+	lol, ok := me["lol"].(map[string]interface{})
+	if !ok {
 		return fmt.Errorf("lol data not found")
 	}
+
+	lol["rankedLeagueTier"] = tier
+	lol["rankedLeagueDivision"] = division
+	lol["rankedLeagueQueue"] = queue
+	me["lol"] = lol
 
 	_, err = a.lcuConnector.request("PUT", "/lol-chat/v1/me", me)
 	if err != nil {

@@ -35,6 +35,10 @@ export namespace main {
 	    auto_ban_champion_id?: number;
 	    auto_pick_champion_id?: number;
 	    position_champions: Record<string, number>;
+	    rank_disguise_enabled: boolean;
+	    rank_disguise_tier: string;
+	    rank_disguise_division: string;
+	    rank_disguise_queue: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -50,6 +54,10 @@ export namespace main {
 	        this.auto_ban_champion_id = source["auto_ban_champion_id"];
 	        this.auto_pick_champion_id = source["auto_pick_champion_id"];
 	        this.position_champions = source["position_champions"];
+	        this.rank_disguise_enabled = source["rank_disguise_enabled"];
+	        this.rank_disguise_tier = source["rank_disguise_tier"];
+	        this.rank_disguise_division = source["rank_disguise_division"];
+	        this.rank_disguise_queue = source["rank_disguise_queue"];
 	    }
 	}
 	export class LCUStatus {

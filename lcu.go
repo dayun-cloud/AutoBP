@@ -123,6 +123,7 @@ func (lcu *LCUConnector) Connect() error {
 
 	lcu.setConnected(true)
 	lcu.updateStatus()
+	go lcu.reapplyRankDisguiseAfterConnect()
 
 	fmt.Println("[INFO] LCU API is ready to be used.")
 	fmt.Println("[INFO] 🚀 后端服务启动成功！")
