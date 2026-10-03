@@ -523,10 +523,6 @@
     <div id="close-confirm-overlay" class="custom-alert-overlay">
       <div class="custom-alert-box" onclick="event.stopPropagation()">
         <div class="custom-alert-message">点击关闭后要执行什么操作？</div>
-        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 15px; cursor: pointer;">
-          <input type="checkbox" id="close-confirm-remember" />
-          记住我的选择，不再询问
-        </label>
         <div style="display: flex; gap: 10px; justify-content: center;">
           <button class="custom-alert-button" onclick="confirmClose(true)">最小化到托盘</button>
           <button class="custom-alert-button" style="background: rgb(128, 128, 128);" onclick="confirmClose(false)">直接退出</button>
@@ -696,30 +692,13 @@
        overlay.style.display = 'none';
      }
 
-    // 关闭按钮处理：根据配置决定询问/最小化到托盘/直接退出
+    // 关闭按钮处理：每次弹出询问框
     function handleAppClose() {
-      const v = config ? config.minimize_to_tray : null;
-      if (v === null || v === undefined) {
-        document.getElementById('close-confirm-remember').checked = false;
-        document.getElementById('close-confirm-overlay').style.display = 'block';
-      } else if (v) {
-        window.go.main.App.MinimizeToTray();
-      } else {
-        window.go.main.App.QuitApp();
-      }
+      document.getElementById('close-confirm-overlay').style.display = 'block';
     }
 
-    async function confirmClose(toTray) {
-      const remember = document.getElementById('close-confirm-remember').checked;
+    function confirmClose(toTray) {
       document.getElementById('close-confirm-overlay').style.display = 'none';
-      if (remember) {
-        try {
-          await window.go.main.App.SetMinimizeToTray(toTray);
-          if (config) config.minimize_to_tray = toTray;
-        } catch (error) {
-          console.error('Failed to save minimize-to-tray setting:', error);
-        }
-      }
       if (toTray) {
         window.go.main.App.MinimizeToTray();
       } else {

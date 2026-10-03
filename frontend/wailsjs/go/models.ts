@@ -39,7 +39,6 @@ export namespace main {
 	    rank_disguise_tier: string;
 	    rank_disguise_division: string;
 	    rank_disguise_queue: string;
-	    minimize_to_tray?: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -59,7 +58,6 @@ export namespace main {
 	        this.rank_disguise_tier = source["rank_disguise_tier"];
 	        this.rank_disguise_division = source["rank_disguise_division"];
 	        this.rank_disguise_queue = source["rank_disguise_queue"];
-	        this.minimize_to_tray = source["minimize_to_tray"];
 	    }
 	}
 	export class LCUStatus {

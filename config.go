@@ -20,9 +20,7 @@ type Config struct {
 	RankDisguiseEnabled  bool            `json:"rank_disguise_enabled"`
 	RankDisguiseTier     string          `json:"rank_disguise_tier"`
 	RankDisguiseDivision string          `json:"rank_disguise_division"`
-	RankDisguiseQueue     string          `json:"rank_disguise_queue"`
-	// MinimizeToTray 点击关闭按钮时的行为：nil=每次询问，true=最小化到托盘，false=直接退出
-	MinimizeToTray *bool `json:"minimize_to_tray"`
+	RankDisguiseQueue    string          `json:"rank_disguise_queue"`
 }
 
 // DefaultConfig 返回默认配置
@@ -46,7 +44,6 @@ func DefaultConfig() *Config {
 		RankDisguiseTier:     "",
 		RankDisguiseDivision: "",
 		RankDisguiseQueue:    "",
-		MinimizeToTray:       nil,
 	}
 }
 
@@ -131,7 +128,6 @@ func (c *Config) UpdateConfig(newConfig map[string]interface{}) error {
 	c.RankDisguiseTier = tempConfig.RankDisguiseTier
 	c.RankDisguiseDivision = tempConfig.RankDisguiseDivision
 	c.RankDisguiseQueue = tempConfig.RankDisguiseQueue
-	c.MinimizeToTray = tempConfig.MinimizeToTray
 
 	// 更新位置英雄配置
 	if tempConfig.PositionChampions != nil {

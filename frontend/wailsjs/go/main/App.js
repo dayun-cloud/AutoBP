@@ -54,10 +54,6 @@ export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }
 
-export function SetMinimizeToTray(arg1) {
-  return window['go']['main']['App']['SetMinimizeToTray'](arg1);
-}
-
 export function SetRankDisguise(arg1, arg2, arg3) {
   return window['go']['main']['App']['SetRankDisguise'](arg1, arg2, arg3);
 }

@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/getlantern/systray"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -16,7 +15,6 @@ type App struct {
 	championManager *ChampionManager
 	lcuConnector    *LCUConnector
 	mu              sync.RWMutex
-	exiting         bool
 }
 
 // NewApp creates a new App application struct
@@ -76,12 +74,7 @@ func (a *App) domReady(_ context.Context) {
 // beforeClose is called when the application is about to quit,
 // either by clicking the window close button or calling runtime.Quit.
 // Returning true will cause the application to continue, false will continue shutdown as normal.
-func (a *App) beforeClose(ctx context.Context) (prevent bool) {
-	// 未主动退出且开启了最小化到托盘时，隐藏窗口而不是退出
-	if !a.exiting && a.config != nil && a.config.MinimizeToTray != nil && *a.config.MinimizeToTray {
-		runtime.WindowHide(ctx)
-		return true
-	}
+func (a *App) beforeClose(_ context.Context) (prevent bool) {
 	if a.lcuConnector != nil {
 		a.lcuConnector.Disconnect()
 	}

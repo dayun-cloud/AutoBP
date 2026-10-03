@@ -2,10 +2,9 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 
 	"github.com/energye/systray"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 //go:embed build/windows/icon.ico
@@ -18,55 +17,30 @@ func (a *App) initTray() {
 
 func (a *App) onTrayReady() {
 	systray.SetIcon(trayIcon)
-	systray.SetTitle("AutoBP")
 	systray.SetTooltip("AutoBP")
 
-	mShow := systray.AddMenuItem("显示主窗口", "显示 AutoBP 主窗口")
-	systray.AddSeparator()
-	mQuit := systray.AddMenuItem("退出", "退出 AutoBP")
-
-	// 左键直接呼出主窗口，右键弹出菜单
+	// 托盘仅用于唤起主窗口，不提供弹出菜单（TrackPopupMenu 存在卡死风险）
 	systray.SetOnClick(func(menu systray.IMenu) {
 		a.showMainWindow()
 	})
 	systray.SetOnRClick(func(menu systray.IMenu) {
-		menu.ShowMenu()
+		a.showMainWindow()
 	})
-
-	mShow.Click(func() { a.showMainWindow() })
-	mQuit.Click(func() { a.QuitApp() })
 }
 
 // showMainWindow 从托盘恢复显示主窗口
 func (a *App) showMainWindow() {
-	runtime.WindowUnminimise(a.ctx)
-	runtime.WindowShow(a.ctx)
+	wailsruntime.WindowUnminimise(a.ctx)
+	// WindowShow 对被隐藏的窗口不可靠，必须用 Show
+	wailsruntime.Show(a.ctx)
 }
 
-// MinimizeToTray 隐藏窗口到托盘
+// MinimizeToTray 隐藏窗口到托盘（关闭询问弹窗调用）
 func (a *App) MinimizeToTray() {
-	runtime.WindowHide(a.ctx)
+	wailsruntime.WindowHide(a.ctx)
 }
 
-// QuitApp 真正退出应用程序
+// QuitApp 真正退出应用程序（关闭询问弹窗调用）
 func (a *App) QuitApp() {
-	a.mu.Lock()
-	a.exiting = true
-	a.mu.Unlock()
-	runtime.Quit(a.ctx)
-}
-
-// SetMinimizeToTray 设置点击关闭时的行为并写入配置文件
-func (a *App) SetMinimizeToTray(enabled bool) error {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
-	a.config.MinimizeToTray = &enabled
-	if err := a.config.SaveConfig(); err != nil {
-		fmt.Printf("[ERROR] Failed to save minimize-to-tray config: %v\n", err)
-		return err
-	}
-
-	fmt.Println("[INFO] Minimize-to-tray setting saved:", enabled)
-	return nil
+	wailsruntime.Quit(a.ctx)
 }
