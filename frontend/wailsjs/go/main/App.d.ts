@@ -20,9 +20,15 @@ export function GoToMainMenu():Promise<void>;
 
 export function Greet(arg1:string):Promise<string>;
 
+export function MinimizeToTray():Promise<void>;
+
+export function QuitApp():Promise<void>;
+
 export function ReconnectLCU():Promise<void>;
 
 export function SaveConfig(arg1:Record<string, any>):Promise<void>;
+
+export function SetMinimizeToTray(arg1:boolean):Promise<void>;
 
 export function SetRankDisguise(arg1:string,arg2:string,arg3:string):Promise<void>;
 

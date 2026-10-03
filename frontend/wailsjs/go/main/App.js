@@ -38,12 +38,24 @@ export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
 
+export function MinimizeToTray() {
+  return window['go']['main']['App']['MinimizeToTray']();
+}
+
+export function QuitApp() {
+  return window['go']['main']['App']['QuitApp']();
+}
+
 export function ReconnectLCU() {
   return window['go']['main']['App']['ReconnectLCU']();
 }
 
 export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
+}
+
+export function SetMinimizeToTray(arg1) {
+  return window['go']['main']['App']['SetMinimizeToTray'](arg1);
 }
 
 export function SetRankDisguise(arg1, arg2, arg3) {
